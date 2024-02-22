@@ -23,9 +23,12 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    role: {
+    avatar: {
       type: String,
-      default: "member",
+    },
+    isDisable: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

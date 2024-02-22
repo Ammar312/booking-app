@@ -1,7 +1,7 @@
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import responseFunc from "../utilis/response.mjs";
-import users from "../models/users.modal.mjs";
+import users from "../models/usersModal/users.modal.mjs";
 
 export const signupController = async (req, res) => {
   const { firstname, lastname, email, phonenumber, password } = req.body;
