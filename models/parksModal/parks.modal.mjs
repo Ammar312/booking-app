@@ -44,6 +44,7 @@ const parkSchema = new Schema(
     },
     capacity: {
       type: Number,
+      required: true,
     },
     cost: {
       type: Number,
@@ -54,7 +55,7 @@ const parkSchema = new Schema(
       default: false,
     },
   },
-  { timestamps: false }
+  { timestamps: true }
 );
 
 const parks = mongoose.model("parks", parkSchema);
