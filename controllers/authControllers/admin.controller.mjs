@@ -1,30 +1,29 @@
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import responseFunc from "../utilis/response.mjs";
-import users from "../models/usersModal/users.modal.mjs";
+import responseFunc from "../../utilis/response.mjs";
+import admins from "../../models/adminsModal/admin.modal.mjs";
 
 export const signupController = async (req, res) => {
-  const { firstname, lastname, email, phonenumber, password } = req.body;
-  if (!firstname || !lastname || !email || !phonenumber || !password) {
+  const { firstname, lastname, email, password } = req.body;
+  if (!firstname || !lastname || !email || !password) {
     return responseFunc(res, 403, "Required parameter missing");
   }
   firstname.trim();
   lastname.trim();
   email.trim();
-  phonenumber.trim();
+
   password.trim();
   try {
-    const result = await users.findOne({ email });
+    const result = await admins.findOne({ email });
     if (result) {
       responseFunc(res, 403, "User already exist with this email");
     } else {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
-      const result = await users.create({
+      const result = await admins.create({
         firstname,
         lastname,
         email,
-        phonenumber,
         password: passwordHash,
       });
       responseFunc(res, 200, "Signup Successfully");
@@ -45,7 +44,7 @@ export const loginController = async (req, res) => {
   email.trim();
   password.trim();
   try {
-    const result = await users.findOne({
+    const result = await admins.findOne({
       email,
     });
     if (!result) {
@@ -59,7 +58,6 @@ export const loginController = async (req, res) => {
             firstname: result.firstname,
             lastname: result.lastname,
             email: result.email,
-            phonenumber: result.phonenumber,
             role: result.role,
             _id: result._id,
           },
@@ -73,7 +71,6 @@ export const loginController = async (req, res) => {
           firstname: result.firstname,
           lastname: result.lastname,
           email: result.email,
-          phonenumber: result.phonenumber,
           role: result.role,
           _id: result._id,
         });
