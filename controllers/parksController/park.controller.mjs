@@ -2,7 +2,7 @@ import parks from "../../models/parksModal/parks.modal.mjs";
 import { uploadCloudinary } from "../../utilis/cloudinary.mjs";
 import responseFunc from "../../utilis/response.mjs";
 
-export const addParkController = async (res, req) => {
+export const addParkController = async (req, res) => {
   const {
     name,
     description,
@@ -14,23 +14,23 @@ export const addParkController = async (res, req) => {
     capacity,
     cost,
   } = req.body;
-  if (
-    !name ||
-    !description ||
-    !location ||
-    !country ||
-    !city ||
-    !starttime ||
-    !endtime ||
-    !capacity ||
-    !cost
-  ) {
-    return responseFunc(res, 403, "Required parameter missing");
-  }
-  if (!req.files) {
-    return responseFunc(res, 403, "Images Required!");
-  }
   try {
+    if (
+      !name ||
+      !description ||
+      !location ||
+      !country ||
+      !city ||
+      !starttime ||
+      !endtime ||
+      !capacity ||
+      !cost
+    ) {
+      return responseFunc(res, 403, "Required parameter missing");
+    }
+    if (!req.files) {
+      return responseFunc(res, 403, "Images Required!");
+    }
     const files = req.files;
     const urls = [];
     for (const file of files) {
