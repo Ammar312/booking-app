@@ -33,12 +33,12 @@ const parkSchema = new Schema(
       default: true,
     },
     parktiming: {
-      start: {
-        type: String,
+      starttime: {
+        type: Date,
         required: true,
       },
-      end: {
-        type: String,
+      endtime: {
+        type: Date,
         required: true,
       },
     },

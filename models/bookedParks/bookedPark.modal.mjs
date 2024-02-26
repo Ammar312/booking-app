@@ -12,16 +12,16 @@ const bookedParkSchema = new Schema(
       ref: "parks",
       required: true,
     },
-    bookeddate: {
+    date: {
       type: Date,
       required: true,
     },
     starttime: {
-      type: String,
+      type: Date,
       required: true,
     },
     endtime: {
-      type: String,
+      type: Date,
       required: true,
     },
     totalcost: {
@@ -32,7 +32,7 @@ const bookedParkSchema = new Schema(
       type: Number,
       required: true,
     },
-    advancedpayment: {
+    advancepayment: {
       type: Number,
       required: true,
     },

@@ -38,6 +38,10 @@ export const addParkController = async (req, res) => {
       const img = await uploadCloudinary(path);
       urls.push(img.secure_url);
     }
+    const startTimeDate = new Date(starttime);
+    const endTimeDate = new Date(endtime);
+    console.log(startTimeDate.toLocaleTimeString());
+    console.log(endTimeDate.toLocaleTimeString());
     const addPark = await parks.create({
       name,
       description,
@@ -45,8 +49,8 @@ export const addParkController = async (req, res) => {
       country,
       city,
       parktiming: {
-        start: starttime,
-        end: endtime,
+        starttime: startTimeDate,
+        endtime: endTimeDate,
       },
       images: urls,
       capacity,
