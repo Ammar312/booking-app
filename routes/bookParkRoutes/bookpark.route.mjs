@@ -1,5 +1,5 @@
 import express from "express";
-import { availableParksInTime } from "../../controllers/parksController/parkbooking.controller.mjs";
+import { availableParksInTimeAndDate } from "../../controllers/parksController/parkbooking.controller.mjs";
 const router = express.Router();
-router.post("/availableparks/time", availableParksInTime);
+router.post("/availableparks", availableParksInTimeAndDate);
 export default router;

@@ -1,7 +1,9 @@
+import moment from "moment";
 import parks from "../../models/parksModal/parks.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
+import bookedparks from "../../models/bookedParks/bookedPark.modal.mjs";
 
-export const availableParksInTime = async (req, res) => {
+export const availableParksInTimeAndDate = async (req, res) => {
   const {
     userId,
     parkId,
@@ -12,6 +14,7 @@ export const availableParksInTime = async (req, res) => {
     totalpeoples,
     advancepayment,
   } = req.body;
+
   //   if (
   //     !userId ||
   //     !parkId ||
@@ -24,34 +27,48 @@ export const availableParksInTime = async (req, res) => {
   //   ) {
   //     return responseFunc(res, 403, "Required parameter missing");
   //   }
-
+  // const a = moment.utc(new Date(starttime)).local().format();
+  // const b = moment.utc(new Date(endtime)).local().format();
+  // console.log("as", a);
+  // console.log("be", b);
+  console.log("starttime: ", new Date(starttime));
+  console.log("endtime: ", new Date(endtime));
   try {
-    const availableParks = await parks.find({
-      "parktiming.starttime": { $lte: new Date(endtime) },
-      "parktiming.endtime": { $gte: new Date(starttime) },
+    const availableParksInTime = await parks.find({
+      "parktiming.starttime": { $lte: new Date(starttime) },
+      "parktiming.endtime": { $gte: new Date(endtime) },
     });
-    console.log("starttime: ", new Date(starttime));
-    console.log("endtime: ", new Date(endtime));
-    // const availableParks = await parks.find({
-    //   $expr: {
-    //     $and: [
-    //       {
-    //         $gte: [
-    //           { $hour: "$parktiming.starttime" },
-    //           { $hour: new Date(starttime) },
+    if (availableParksInTime) {
+      const availableParks = await bookedparks.find({
+        date: new Date(date),
+        starttime,
+      });
+    } else {
+    }
+    // const availableParks = await parks.aggregate([
+    //   {
+    //     $match: {
+    //       $expr: {
+    //         $and: [
+    //           {
+    //             $lte: [
+    //               { $hour: "$parktiming.starttime" },
+    //               { $hour: new Date(endtime) },
+    //             ],
+    //           },
+    //           {
+    //             $gte: [
+    //               { $hour: "$parktiming.endtime" },
+    //               { $hour: new Date(starttime) },
+    //             ],
+    //           },
     //         ],
     //       },
-    //       {
-    //         $lte: [
-    //           { $hour: "$parktiming.endtime" },
-    //           { $hour: new Date(endtime) },
-    //         ],
-    //       },
-    //     ],
+    //     },
     //   },
-    // });
-    console.log(availableParks);
-    responseFunc(res, 200, "get", availableParks);
+    // ]);
+
+    responseFunc(res, 200, "get", availableParksInTime);
   } catch (error) {
     console.log("parkbookingerror", error);
     responseFunc(res, 400, "error");
