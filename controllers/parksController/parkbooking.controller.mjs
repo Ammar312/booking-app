@@ -4,16 +4,10 @@ import responseFunc from "../../utilis/response.mjs";
 import bookedparks from "../../models/bookedParks/bookedPark.modal.mjs";
 
 export const availableParksInTimeAndDate = async (req, res) => {
-  const {
-    userId,
-    parkId,
-    date,
-    starttime,
-    endtime,
-    totalcost,
-    totalpeoples,
-    advancepayment,
-  } = req.body;
+  const { date, starttime, endtime } = req.body;
+  if (!date || !starttime || !endtime) {
+    return responseFunc(res, 403, "Required parameter missing");
+  }
 
   // const a = moment.utc(new Date(starttime)).local().format();
   // const b = moment.utc(new Date(endtime)).local().format();
