@@ -16,23 +16,23 @@ const bookedParkSchema = new Schema(
       type: Date,
       required: true,
     },
-    starttime: {
+    startTime: {
       type: Date,
       required: true,
     },
-    endtime: {
+    endTime: {
       type: Date,
       required: true,
     },
-    totalcost: {
+    totalCost: {
       type: Number,
       required: true,
     },
-    totalpeoples: {
+    totalPeoples: {
       type: Number,
       required: true,
     },
-    advancepayment: {
+    advancePayment: {
       type: Number,
       required: true,
     },
