@@ -1,7 +1,7 @@
 import Jwt from "jsonwebtoken";
 const jwtMiddleware = (req, res, next) => {
   const token = req.cookies.token;
-
+  console.log(req.cookies);
   try {
     const decoded = Jwt.verify(token, process.env.SECRET);
 

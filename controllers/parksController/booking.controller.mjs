@@ -26,6 +26,7 @@ export const availableParksInTimeAndDate = async (req, res) => {
         date: date,
         startTime: { $lte: endtime },
         endTime: { $gte: starttime },
+        status: "booked",
       });
       console.log("bookedParks", bookedParks);
       const availableParks = availableParksInTime.filter((park) => {
@@ -69,6 +70,21 @@ export const bookAParkController = async (req, res) => {
     return responseFunc(res, 403, "Required parameter missing");
   }
   try {
+    const isBooked = await bookedparks.findOne({
+      parkId,
+      date: date,
+      startTime: { $lte: endTime },
+      endTime: { $gte: startTime },
+      status: "booked",
+    });
+    if (isBooked) {
+      responseFunc(
+        res,
+        409,
+        "This park is already booked at this date and time"
+      );
+      return;
+    }
     const bookPark = await bookedparks.create({
       userId,
       parkId,
@@ -86,6 +102,21 @@ export const bookAParkController = async (req, res) => {
   }
 };
 
+export const cancelBooking = async (req, res) => {
+  const { bookingId } = req.body;
+  try {
+    const changeStatus = await bookedparks.updateOne(
+      { _id: bookingId },
+      {
+        $set: { status: "canceled" },
+      }
+    );
+    responseFunc(res, 200, "Your booking has been canceled.");
+  } catch (error) {
+    console.log("cancelBooking: ", error);
+    responseFunc(res, 400, "Error in cancel booking");
+  }
+};
 // const availableParks = await parks.aggregate([
 //   {
 //     $match: {
