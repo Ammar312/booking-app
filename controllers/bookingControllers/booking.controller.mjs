@@ -117,6 +117,18 @@ export const cancelBooking = async (req, res) => {
     responseFunc(res, 400, "Error in cancel booking");
   }
 };
+
+export const reschdeuleBooking = async (req, res) => {
+  const { startTime, endTime, bookingId, date } = req.body;
+  if (!startTime || !endTime || !bookingId) {
+    return responseFunc(res, 403, "Required Parameter Missing");
+  }
+  try {
+  } catch (error) {
+    console.log("reschdeule error: ", error);
+    responseFunc(res, 400, "Error in rescheduling booking");
+  }
+};
 // const availableParks = await parks.aggregate([
 //   {
 //     $match: {

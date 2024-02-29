@@ -1,21 +1,19 @@
 import Jwt from "jsonwebtoken";
+import responseFunc from "../utilis/response.mjs";
 const jwtMiddleware = (req, res, next) => {
-  const token = req.cookies.token;
-  console.log(req.cookies);
+  const token = req.headers.authorization || req.cookies.token;
+  if (!token) {
+    return responseFunc(res, 401, "Unauthorized: No token provided");
+  }
+
   try {
     const decoded = Jwt.verify(token, process.env.SECRET);
-
     req.currentUser = decoded;
-    //  {
-    //   username: decoded.username,
-    //   email: decoded.email,
-    //   _id: decoded._id,
-    // };
     console.log("token verified");
     next();
   } catch (error) {
     console.log("errorabc", error);
-    res.status(401).send({ message: "Unauthorized" });
+    responseFunc(res, 401, "Unauthorized: Invalid token");
     return;
   }
 };

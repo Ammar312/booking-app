@@ -3,10 +3,12 @@ import {
   availableParksInTimeAndDate,
   bookAParkController,
   cancelBooking,
-} from "../../controllers/parksController/booking.controller.mjs";
+  reschdeuleBooking,
+} from "../../controllers/bookingControllers/booking.controller.mjs";
 import jwtMiddleware from "../../middlewares/jwt.middleware.mjs";
 const router = express.Router();
-router.post("/availableparks", availableParksInTimeAndDate);
+router.post("/availableparks", jwtMiddleware, availableParksInTimeAndDate);
 router.post("/parkbooking", bookAParkController);
 router.put("/cancelbooking", cancelBooking);
+router.put("/reschdeulebooking", reschdeuleBooking);
 export default router;

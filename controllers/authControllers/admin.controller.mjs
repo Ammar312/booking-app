@@ -26,7 +26,21 @@ export const signupController = async (req, res) => {
         email,
         password: passwordHash,
       });
-      responseFunc(res, 200, "Signup Successfully");
+      const token = Jwt.sign(
+        {
+          firstname: result.firstname,
+          lastname: result.lastname,
+          email: result.email,
+          role: result.role,
+          _id: result._id,
+        },
+        process.env.SECRET,
+        {
+          expiresIn: "1h",
+        }
+      );
+      res.cookie("token", token, { httpOnly: true, secure: true });
+      responseFunc(res, 200, "Signup Successfully", { token });
     }
   } catch (error) {
     console.log("signupError ", error);
@@ -68,11 +82,12 @@ export const loginController = async (req, res) => {
         );
         res.cookie("token", token, { httpOnly: true, secure: true });
         responseFunc(res, 200, "Login Successfully", {
-          firstname: result.firstname,
-          lastname: result.lastname,
-          email: result.email,
-          role: result.role,
-          _id: result._id,
+          token,
+          // firstname: result.firstname,
+          // lastname: result.lastname,
+          // email: result.email,
+          // role: result.role,
+          // _id: result._id,
         });
         return;
       } else {
