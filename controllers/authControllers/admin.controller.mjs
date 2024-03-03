@@ -39,7 +39,7 @@ export const signupController = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      res.cookie("token", token, { httpOnly: true, secure: true });
+      res.cookie("adminToken", token, { httpOnly: true, secure: true });
       responseFunc(res, 200, "Signup Successfully", { token });
     }
   } catch (error) {
@@ -80,7 +80,7 @@ export const loginController = async (req, res) => {
             expiresIn: "1h",
           }
         );
-        res.cookie("token", token, { httpOnly: true, secure: true });
+        res.cookie("adminToken", token, { httpOnly: true, secure: true });
         responseFunc(res, 200, "Login Successfully", {
           token,
           // firstname: result.firstname,
@@ -97,5 +97,22 @@ export const loginController = async (req, res) => {
   } catch (error) {
     console.log("loginError ", error);
     responseFunc(res, 400, "Something went wrong");
+  }
+};
+
+export const getProfile = async (req, res) => {
+  const { _id } = req.currentUser;
+  try {
+    const result = await admins.findOne({
+      _id,
+    });
+    console.log(result);
+    if (result === null) {
+      return responseFunc(res, 404, "User not found");
+    }
+    responseFunc(res, 200, "Profile Fetched", result);
+  } catch (error) {
+    console.log("profileFetchedError", error);
+    responseFunc(res, 400, "Error in getting user");
   }
 };

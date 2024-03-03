@@ -101,3 +101,20 @@ export const loginController = async (req, res) => {
     responseFunc(res, 400, "Something went wrong");
   }
 };
+
+export const getProfile = async (req, res) => {
+  const { _id } = req.currentUser;
+  try {
+    const result = await users.findOne({
+      _id,
+    });
+    console.log(result);
+    if (result === null) {
+      return responseFunc(res, 404, "User not found");
+    }
+    responseFunc(res, 200, "Profile Fetched", result);
+  } catch (error) {
+    console.log("profileFetchedError", error);
+    responseFunc(res, 400, "Error in getting user");
+  }
+};

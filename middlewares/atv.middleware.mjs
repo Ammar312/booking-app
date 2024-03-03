@@ -1,23 +1,20 @@
 import Jwt from "jsonwebtoken";
 import responseFunc from "../utilis/response.mjs";
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  console.log("header", req.headers);
-  console.log("header.authorization", req.headers.authorization);
+const adminTokenVerify = (req, res, next) => {
+  const token = req.headers.authorization || req.cookies.adminToken;
   if (!token) {
     return responseFunc(res, 401, "Unauthorized: No token provided");
   }
 
   try {
     const decoded = Jwt.verify(token, process.env.SECRET);
-    req.currentUser = decoded;
+    req.currentAdmin = decoded;
     console.log("token verified");
     next();
   } catch (error) {
-    console.log("expiryError ", error);
+    console.log("errorabc", error);
     responseFunc(res, 401, "Unauthorized: Invalid token");
     return;
   }
 };
-export default verifyToken;
+export default adminTokenVerify;

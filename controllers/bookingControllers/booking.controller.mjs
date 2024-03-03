@@ -119,11 +119,29 @@ export const cancelBooking = async (req, res) => {
 };
 
 export const reschdeuleBooking = async (req, res) => {
-  const { startTime, endTime, bookingId, date } = req.body;
-  if (!startTime || !endTime || !bookingId) {
+  const { startTime, endTime, bookingId, date, parkId } = req.body;
+  if (!startTime || !endTime || !bookingId || !parkId || !date) {
     return responseFunc(res, 403, "Required Parameter Missing");
   }
   try {
+    const isBooked = await bookedparks.findOne({
+      parkId,
+      startTime: { $lte: endTime },
+      endTime: { $gte: startTime },
+      date,
+      status: "booked",
+    });
+    if (isBooked) {
+      return responseFunc(
+        res,
+        409,
+        "This park is already booked at this date and time"
+      );
+    } else {
+      const updated = { startTime, endTime, date };
+      await bookedparks.updateOne({ _id: bookingId }, { $set: updated });
+      responseFunc(res, 200, "Booking rescheduled");
+    }
   } catch (error) {
     console.log("reschdeule error: ", error);
     responseFunc(res, 400, "Error in rescheduling booking");
