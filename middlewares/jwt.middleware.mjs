@@ -1,16 +1,19 @@
 import Jwt from "jsonwebtoken";
 import responseFunc from "../utilis/response.mjs";
-const verifyToken = (req, res, next) => {
+
+const verifyToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("header", req.headers);
-  console.log("header.authorization", req.headers.authorization);
+
+  console.log("header", role, req.headers);
   if (!token) {
     return responseFunc(res, 401, "Unauthorized: No token provided");
   }
 
   try {
     const decoded = Jwt.verify(token, process.env.SECRET);
+    console.log();
+    // const checkUser = await
     req.currentUser = decoded;
     console.log("token verified");
     next();
