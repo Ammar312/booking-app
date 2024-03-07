@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import parks from "../../models/parksModal/parks.modal.mjs";
 import { uploadCloudinary } from "../../utilis/cloudinary.mjs";
 import responseFunc from "../../utilis/response.mjs";
@@ -68,10 +69,61 @@ export const getAllParks = async (req, res) => {
   const pageSize = Number(req.query.pageSize) || 10;
   const skip = (page - 1) * pageSize;
   try {
-    const result = await parks.find({}).skip(skip).limit(pageSize);
+    const result = await parks
+      .find({ isDisable: false })
+      .skip(skip)
+      .limit(pageSize);
     responseFunc(res, 200, "Successfully get all parks", result);
   } catch (error) {
     console.log("getAllParksError: ", error);
     responseFunc(res, 400, "Error in getting parks");
+  }
+};
+export const editPark = async (req, res) => {
+  // const {parkId,name,location,description,country,city,starttime,endtime,capacity,cost}=req.body
+  const { parkId, starttime, endtime, ...updateFields } = req.body;
+  if (!mongoose.isValidObjectId(parkId)) {
+    return responseFunc(res, 400, "Invalid ParkId");
+  }
+  try {
+    let updatedData = {};
+
+    Object.keys(updateFields).forEach((field) => {
+      if (updateFields[field] !== undefined && field !== parkId) {
+        updatedData[field] = updateFields[field];
+      }
+    });
+    if (starttime && endtime) {
+      updatedData.parktiming = {
+        starttime,
+        endtime,
+      };
+    }
+
+    const updatePark = await parks.updateOne(
+      { _id: parkId, isDisable: false },
+      { $set: updatedData }
+    );
+    responseFunc(res, 200, "Park Updated Successfully");
+  } catch (error) {
+    console.log("editParkError: ", error);
+    responseFunc(res, 400, "Error in updating park");
+  }
+};
+
+export const deletePark = async (req, res) => {
+  const { parkId } = req.body;
+  if (!mongoose.isValidObjectId(parkId)) {
+    return responseFunc(res, 400, "Invalid ParkId");
+  }
+  try {
+    const result = await parks.updateOne(
+      { _id: parkId, isDisable: false },
+      { $set: { isDisable: true } }
+    );
+    responseFunc(res, 200, "Park Deleted Successfully");
+  } catch (error) {
+    console.log("deleteParkError: ", error);
+    responseFunc(res, 400, "Error in deleting park");
   }
 };

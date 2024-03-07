@@ -19,6 +19,7 @@ export const availableParksInTimeAndDate = async (req, res) => {
     const availableParksInTime = await parks.find({
       "parktiming.starttime": { $lte: new Date(starttime) },
       "parktiming.endtime": { $gte: new Date(endtime) },
+      isDisable: false,
     });
     console.log("availableParksInTime", availableParksInTime);
     if (availableParksInTime.length > 0) {

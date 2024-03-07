@@ -1,6 +1,8 @@
 import express from "express";
 import {
   addParkController,
+  deletePark,
+  editPark,
   getAllParks,
 } from "../../controllers/parksController/park.controller.mjs";
 import upload from "../../middlewares/multer.middleware.mjs";
@@ -14,5 +16,7 @@ router.post(
   addParkController
 );
 router.get("/allparks", verifyToken("admin"), getAllParks);
+router.put("/editpark", verifyToken("admin"), editPark);
+router.put("/deletepark", verifyToken("admin"), deletePark);
 
 export default router;
