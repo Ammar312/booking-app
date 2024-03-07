@@ -8,6 +8,6 @@ import verifyToken from "../../middlewares/jwt.middleware.mjs";
 const router = express.Router();
 router.post("/signup", signupController);
 router.post("/login", loginController);
-router.get("/getprofile", verifyToken, getProfile);
+router.get("/getprofile", verifyToken("admin"), getProfile);
 
 export default router;

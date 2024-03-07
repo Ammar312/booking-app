@@ -105,9 +105,12 @@ export const loginController = async (req, res) => {
 export const getProfile = async (req, res) => {
   const { _id } = req.currentUser;
   try {
-    const result = await users.findOne({
-      _id,
-    });
+    const result = await users.findOne(
+      {
+        _id,
+      },
+      { password: 0 }
+    );
     console.log(result);
     if (result === null) {
       return responseFunc(res, 404, "User not found");

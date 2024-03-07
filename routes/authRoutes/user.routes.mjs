@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.post("/signup", signupController);
 router.post("/login", loginController);
-router.get("/getprofile", verifyToken, getProfile);
+router.get("/getprofile", verifyToken("user"), getProfile);
 
 export default router;

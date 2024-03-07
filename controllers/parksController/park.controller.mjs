@@ -62,3 +62,16 @@ export const addParkController = async (req, res) => {
     responseFunc(res, 400, "error in add park");
   }
 };
+
+export const getAllParks = async (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const pageSize = Number(req.query.pageSize) || 10;
+  const skip = (page - 1) * pageSize;
+  try {
+    const result = await parks.find({}).skip(skip).limit(pageSize);
+    responseFunc(res, 200, "Successfully get all parks", result);
+  } catch (error) {
+    console.log("getAllParksError: ", error);
+    responseFunc(res, 400, "Error in getting parks");
+  }
+};

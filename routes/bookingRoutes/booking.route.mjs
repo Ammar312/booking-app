@@ -7,8 +7,12 @@ import {
 } from "../../controllers/bookingControllers/booking.controller.mjs";
 import verifyToken from "../../middlewares/jwt.middleware.mjs";
 const router = express.Router();
-router.post("/availableparks", verifyToken, availableParksInTimeAndDate);
-router.post("/parkbooking", verifyToken, bookAParkController);
-router.put("/cancelbooking", verifyToken, cancelBooking);
-router.put("/reschdeulebooking", verifyToken, reschdeuleBooking);
+router.post(
+  "/availableparks",
+  verifyToken("user"),
+  availableParksInTimeAndDate
+);
+router.post("/parkbooking", verifyToken("user"), bookAParkController);
+router.put("/cancelbooking", verifyToken("user"), cancelBooking);
+router.put("/reschdeulebooking", verifyToken("user"), reschdeuleBooking);
 export default router;
