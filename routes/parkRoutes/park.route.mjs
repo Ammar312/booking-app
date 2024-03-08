@@ -15,8 +15,16 @@ router.post(
   upload.any("images"),
   addParkController
 );
-router.get("/allparks", verifyToken("admin"), getAllParks);
-router.put("/editpark", verifyToken("admin"), editPark);
-router.put("/deletepark", verifyToken("admin"), deletePark);
+router.get(
+  "/allparks",
+  verifyToken("admin", ["superadmin", "admin"]),
+  getAllParks
+);
+router.put(
+  "/editpark",
+  verifyToken("admin", ["superadmin", "admin"]),
+  editPark
+);
+router.put("/deletepark", verifyToken("admin", ["superadmin"]), deletePark);
 
 export default router;

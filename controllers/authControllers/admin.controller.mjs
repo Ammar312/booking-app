@@ -106,6 +106,7 @@ export const getProfile = async (req, res) => {
     const result = await admins.findOne(
       {
         _id,
+        isDisable: false,
       },
       { password: 0 }
     );

@@ -9,10 +9,22 @@ import verifyToken from "../../middlewares/jwt.middleware.mjs";
 const router = express.Router();
 router.post(
   "/availableparks",
-  verifyToken("user"),
+  verifyToken("user", ["superadmin", "admin", "user"]),
   availableParksInTimeAndDate
 );
-router.post("/parkbooking", verifyToken("user"), bookAParkController);
-router.put("/cancelbooking", verifyToken("user"), cancelBooking);
-router.put("/reschdeulebooking", verifyToken("user"), reschdeuleBooking);
+router.post(
+  "/parkbooking",
+  verifyToken("user", ["superadmin", "admin", "user"]),
+  bookAParkController
+);
+router.put(
+  "/cancelbooking",
+  verifyToken("user", ["superadmin", "admin", "user"]),
+  cancelBooking
+);
+router.put(
+  "/reschdeulebooking",
+  verifyToken("user", ["superadmin", "admin", "user"]),
+  reschdeuleBooking
+);
 export default router;

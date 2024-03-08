@@ -34,6 +34,7 @@ export const signupController = async (req, res) => {
           email: result.email,
           phonenumber: result.phonenumber,
           _id: result._id,
+          role: "user",
         },
         process.env.SECRET,
         {
@@ -75,6 +76,7 @@ export const loginController = async (req, res) => {
             email: result.email,
             phonenumber: result.phonenumber,
             _id: result._id,
+            role: "user",
           },
           process.env.SECRET,
           {
@@ -108,6 +110,7 @@ export const getProfile = async (req, res) => {
     const result = await users.findOne(
       {
         _id,
+        isDisable: false,
       },
       { password: 0 }
     );

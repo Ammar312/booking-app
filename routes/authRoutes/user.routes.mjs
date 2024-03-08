@@ -9,6 +9,10 @@ const router = express.Router();
 
 router.post("/signup", signupController);
 router.post("/login", loginController);
-router.get("/getprofile", verifyToken("user"), getProfile);
+router.get(
+  "/getprofile",
+  verifyToken("user", ["superadmin", "admin", "user"]),
+  getProfile
+);
 
 export default router;

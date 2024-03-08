@@ -15,6 +15,16 @@ export const availableParksInTimeAndDate = async (req, res) => {
   // console.log("be", b);
   console.log("starttime: ", new Date(starttime));
   console.log("endtime: ", new Date(endtime));
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const datee = d.getDate();
+  const currentDate = `${year}-${month.length === 2 ? month : `0${month}`}-${
+    datee.length === 2 ? datee : `0${datee}`
+  }T00:00:00`;
+  if (date < currentDate) {
+    return responseFunc(res, 400, "Invalid Date");
+  }
   try {
     const availableParksInTime = await parks.find({
       "parktiming.starttime": { $lte: new Date(starttime) },
@@ -43,7 +53,7 @@ export const availableParksInTimeAndDate = async (req, res) => {
     // responseFunc(res, 200, "get", availableParksInTime);
   } catch (error) {
     console.log("parkbookingerror", error);
-    responseFunc(res, 400, "Error finding available parks");
+    responseFunc(res, 400, "Error in finding available parks");
   }
 };
 export const bookAParkController = async (req, res) => {
