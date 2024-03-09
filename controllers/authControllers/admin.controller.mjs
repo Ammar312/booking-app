@@ -60,6 +60,7 @@ export const loginController = async (req, res) => {
   try {
     const result = await admins.findOne({
       email,
+      isDisable: false,
     });
     if (!result) {
       responseFunc(res, 401, "Email incorrect");
