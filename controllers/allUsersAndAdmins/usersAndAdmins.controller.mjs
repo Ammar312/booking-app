@@ -55,6 +55,42 @@ export const getAllAdmins = async (req, res) => {
   }
 };
 
+export const createAdmin = async (req, res) => {
+  const { firstname, lastname, email, password, role } = req.body;
+  if (!firstname || !lastname || !email || !password) {
+    return responseFunc(res, 403, "Required parameter missing");
+  }
+  firstname.trim();
+  lastname.trim();
+  email.trim();
+  password.trim();
+  if (!email.includes("@"))
+    return responseFunc(res, 403, "Email must contain @");
+  if (password.length < 6)
+    return responseFunc(res, 403, "Password must be equal and greater than 6");
+  try {
+    const result = await admins.findOne({ email });
+    if (result) {
+      responseFunc(res, 403, "User already exist with this email");
+    } else {
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+      const result = await admins.create({
+        firstname,
+        lastname,
+        email,
+        password: passwordHash,
+        role,
+      });
+
+      responseFunc(res, 200, `${result.role} created successfully`);
+    }
+  } catch (error) {
+    console.log("createAdminError ", error);
+    responseFunc(res, 400, "Error in creating admin");
+  }
+};
+
 export const deleteAdmin = async (req, res) => {
   const { adminId } = req.body;
   if (!mongoose.isValidObjectId(adminId)) {

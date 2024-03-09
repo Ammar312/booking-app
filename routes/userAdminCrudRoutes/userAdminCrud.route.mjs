@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  createAdmin,
   deleteAdmin,
   deleteUser,
   getAllAdmins,
@@ -14,6 +15,7 @@ router.get(
   verifyToken("admin", ["superadmin", "admin"]),
   getAllAdmins
 );
+router.post("/createadmin", verifyToken("admin", ["superadmin"]), createAdmin);
 router.put("/deleteadmin", verifyToken("admin", ["superadmin"]), deleteAdmin);
 router.put("/updateadmin", verifyToken("admin", ["superadmin"]), updateAdmin);
 router.get(

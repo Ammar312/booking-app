@@ -13,6 +13,10 @@ export const signupController = async (req, res) => {
   email.trim();
   phonenumber.trim();
   password.trim();
+  if (!email.includes("@"))
+    return responseFunc(res, 403, "Email must contain @");
+  if (password.length < 6)
+    return responseFunc(res, 403, "Password must be equal and greater than 6");
   try {
     const result = await users.findOne({ email });
     if (result) {
