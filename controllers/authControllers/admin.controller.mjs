@@ -97,7 +97,7 @@ export const loginController = async (req, res) => {
     }
   } catch (error) {
     console.log("loginError ", error);
-    responseFunc(res, 400, "Something went wrong");
+    responseFunc(res, 400, "Something went wrong", error);
   }
 };
 
@@ -118,6 +118,6 @@ export const getProfile = async (req, res) => {
     responseFunc(res, 200, "Profile Fetched", result);
   } catch (error) {
     console.log("profileFetchedError", error);
-    responseFunc(res, 400, "Error in getting user");
+    responseFunc(res, 400, "Error in getting user", error);
   }
 };
