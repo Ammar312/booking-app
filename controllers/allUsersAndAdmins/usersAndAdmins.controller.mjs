@@ -62,11 +62,11 @@ export const deleteAdmin = async (req, res) => {
   }
 
   try {
-    await users.updateOne(
+    const result = await admins.updateOne(
       { _id: adminId, isDisable: false },
       { $set: { isDisable: true } }
     );
-    responseFunc(res, 200, "Admin deleted successfully");
+    responseFunc(res, 200, "Admin deleted successfully", result);
   } catch (error) {
     console.log("deleteAdminError: ", error);
     responseFunc(res, 400, "Error in deleting admin");
