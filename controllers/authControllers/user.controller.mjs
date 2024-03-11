@@ -2,6 +2,7 @@ import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import responseFunc from "../../utilis/response.mjs";
 import users from "../../models/usersModal/users.modal.mjs";
+import sendResetPasswordEmail from "../../utilis/nodemailer.mjs";
 
 export const signupController = async (req, res) => {
   const { firstname, lastname, email, phonenumber, password } = req.body;
@@ -127,5 +128,53 @@ export const getProfile = async (req, res) => {
   } catch (error) {
     console.log("profileFetchedError", error);
     responseFunc(res, 400, "Error in getting user", error);
+  }
+};
+
+export const forgotPasswordController = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await users.findOne({ email });
+    if (!user) {
+      return responseFunc(res, 404, "User Not found");
+    }
+    const token = generateToken(email);
+    sendResetPasswordEmail(email, token);
+    responseFunc(res, 200, "Password reset link sent successfully");
+  } catch (error) {
+    console.log("forgotPasswordError", error);
+    responseFunc(res, 400, "Error in forgot password", error);
+  }
+};
+
+const generateToken = (email) => {
+  return Jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, {
+    expiresIn: "15m",
+  });
+};
+
+export const resetPasswordView = async (req, res) => {
+  const { token } = req.query;
+  res.render("resetpassword", { token });
+};
+
+export const resetPasswordController = async (req, res) => {
+  const { token } = req.query;
+  const { newPassword, confirmPassword } = req.body;
+  try {
+    const decode = Jwt.verify(token, process.env.RESET_PASSWORD_KEY);
+    if (!decode) return responseFunc(res, 403, "Token Expired");
+    if (newPassword !== confirmPassword)
+      return responseFunc(res, 403, "Password must be same");
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(confirmPassword, saltRounds);
+    const resetPassword = await users.updateOne(
+      { email: decode.email, isDisable: false },
+      { $set: { password: passwordHash } }
+    );
+    responseFunc(res, 200, "Password Reset Successfully");
+  } catch (error) {
+    console.log("ErrorResetPassword", error);
+    responseFunc(res, 400, "Error in Reset password", { error });
   }
 };
