@@ -39,6 +39,35 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+export const updateUser = async (req, res) => {
+  const { userId, lastname, firstname, phonenumber } = req.body;
+  if (!mongoose.isValidObjectId(userId)) {
+    return responseFunc(res, 400, "Invalid userId");
+  }
+  try {
+    let updatedData = {};
+    if (firstname) {
+      updatedData.firstname = firstname;
+    }
+    if (lastname) {
+      updatedData.lastname = lastname;
+    }
+    if (phonenumber) {
+      updatedData.phonenumber = phonenumber;
+    }
+    await admins.updateOne(
+      { _id: adminId, isDisable: false },
+      { $set: updatedData }
+    );
+    responseFunc(res, 200, "User Updated Successfully");
+  } catch (error) {
+    console.log("updateUserError: ", error);
+    responseFunc(res, 400, "Error in updating user");
+  }
+};
+
+export const updateUserAvatar = async (req, res) => {};
+
 export const getAllAdmins = async (req, res) => {
   const page = Number(req.query.page) || 1;
   const pageSize = Number(req.query.pageSize) || 10;

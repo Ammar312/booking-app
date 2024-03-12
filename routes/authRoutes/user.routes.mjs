@@ -15,7 +15,7 @@ router.post("/signup", signupController);
 router.post("/login", loginController);
 router.get("/getprofile", verifyToken("user", ["user"]), getProfile);
 router.post("/forgotpassword", forgotPasswordController);
-router.get("/resetpasswordview", resetPasswordView);
+router.get("/view/resetpassword", resetPasswordView);
 router.post("/reset-password", resetPasswordController);
 
 export default router;

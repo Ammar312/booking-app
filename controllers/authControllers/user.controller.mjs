@@ -15,7 +15,7 @@ export const signupController = async (req, res) => {
   phonenumber.trim();
   password.trim();
   if (!email.includes("@"))
-    return responseFunc(res, 403, "Email must contain @");
+    return responseFunc(res, 403, "Invalid Email: must contain @");
   if (password.length < 6)
     return responseFunc(res, 403, "Password must be equal and greater than 6");
   try {
@@ -134,7 +134,7 @@ export const getProfile = async (req, res) => {
 export const forgotPasswordController = async (req, res) => {
   const { email } = req.body;
   try {
-    const user = await users.findOne({ email });
+    const user = await users.findOne({ email, isDisable: false });
     if (!user) {
       return responseFunc(res, 404, "User Not found");
     }
@@ -149,7 +149,7 @@ export const forgotPasswordController = async (req, res) => {
 
 const generateToken = (email) => {
   return Jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, {
-    expiresIn: "15m",
+    expiresIn: "3m",
   });
 };
 

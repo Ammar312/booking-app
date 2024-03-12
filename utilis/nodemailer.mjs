@@ -15,7 +15,7 @@ const sendResetPasswordEmail = (email, token) => {
     from: process.env.YOUR_EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p><a href="http://localhost:5000/api/v1/user/resetpasswordview?token=${token}">Click here</a>to reset your password.</p>`,
+    html: `<p><a href="http://localhost:5000/api/v1/user/view/resetpassword?token=${token}">Click here</a> to reset your password.</p>`,
   };
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {

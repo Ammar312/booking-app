@@ -15,11 +15,26 @@ const verifyToken = (role, allowedRoles) => async (req, res, next) => {
   try {
     const decoded = Jwt.verify(token, process.env.SECRET);
 
+    if (decoded.role === "superadmin") {
+      const isUser = await admins.findOne({
+        _id: decoded._id,
+        isDisable: false,
+      });
+      if (isUser) {
+        req.currentUser = decoded;
+        next();
+        return;
+      } else {
+        responseFunc(res, 401, "Invalid User");
+      }
+      return;
+    }
+
     if (allowedRoles.includes(decoded.role)) {
       const isUser =
         role === "admin"
-          ? await admins.findById(decoded._id)
-          : await users.findById(decoded._id);
+          ? await admins.findOne({ _id: decoded._id, isDisable: false })
+          : await users.findOne({ _id: decoded._id, isDisable: false });
       console.log("qwrety", isUser);
       if (isUser) {
         req.currentUser = decoded;

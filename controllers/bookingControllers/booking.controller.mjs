@@ -3,6 +3,16 @@ import parks from "../../models/parksModal/parks.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
 import bookedparks from "../../models/bookedParks/bookedPark.modal.mjs";
 
+const d = new Date();
+const year = d.getFullYear();
+const month = d.getMonth() + 1;
+const datee = d.getDate();
+const currentDate = `${year}-${month.length === 2 ? month : `0${month}`}-${
+  datee.length === 2 ? datee : `0${datee}`
+}T00:00:00`;
+const st = `1970-01-01T00:00:00.000+00:00`;
+const et = `1970-01-01T23:59:00.000+00:00`;
+
 export const availableParksInTimeAndDate = async (req, res) => {
   const { date, starttime, endtime } = req.body;
   if (!date || !starttime || !endtime) {
@@ -13,17 +23,13 @@ export const availableParksInTimeAndDate = async (req, res) => {
   // const b = moment.utc(new Date(endtime)).local().format();
   // console.log("as", a);
   // console.log("be", b);
-  console.log("starttime: ", new Date(starttime));
-  console.log("endtime: ", new Date(endtime));
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-  const datee = d.getDate();
-  const currentDate = `${year}-${month.length === 2 ? month : `0${month}`}-${
-    datee.length === 2 ? datee : `0${datee}`
-  }T00:00:00`;
+  // console.log("starttime: ", new Date(starttime));
+  // console.log("endtime: ", new Date(endtime));
   if (date < currentDate) {
     return responseFunc(res, 400, "Invalid Date");
+  }
+  if (!starttime > st || !endtime < et) {
+    return responseFunc(res, 400, "Invalid Time");
   }
   try {
     const availableParksInTime = await parks.find({
@@ -80,6 +86,15 @@ export const bookAParkController = async (req, res) => {
   ) {
     return responseFunc(res, 403, "Required parameter missing");
   }
+
+  if (date < currentDate) {
+    return responseFunc(res, 400, "Invalid Date");
+  }
+
+  if (!startTime > st || !endTime < et) {
+    return responseFunc(res, 400, "Invalid Time");
+  }
+
   try {
     const isBooked = await bookedparks.findOne({
       parkId,
