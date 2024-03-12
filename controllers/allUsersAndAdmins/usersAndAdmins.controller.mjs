@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import admins from "../../models/adminsModal/admin.modal.mjs";
 import users from "../../models/usersModal/users.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
+import { uploadCloudinary } from "../../utilis/cloudinary.mjs";
 
 export const getAllUsers = async (req, res) => {
   const page = Number(req.query.page) || 1;
@@ -66,7 +67,31 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const updateUserAvatar = async (req, res) => {};
+export const updateUserAvatar = async (req, res) => {
+  const { userId } = req.body;
+  if (!mongoose.isValidObjectId(userId)) {
+    return responseFunc(res, 400, "Invalid userId");
+  }
+  try {
+    const { path } = req.file;
+    const avatar = await uploadCloudinary(path);
+    const result = await users.updateOne(
+      { _id: userId, isDisable: false },
+      {
+        $set: {
+          avatar: {
+            url: avatar.secure_url,
+            publicId: avatar.public_id,
+          },
+        },
+      }
+    );
+    responseFunc(res, 200, "Avatar Updated");
+  } catch (error) {
+    console.log("userAvatarError: ", error);
+    responseFunc(res, 400, "Error in updating user avatar");
+  }
+};
 
 export const getAllAdmins = async (req, res) => {
   const page = Number(req.query.page) || 1;

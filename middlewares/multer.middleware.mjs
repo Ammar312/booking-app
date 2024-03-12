@@ -8,6 +8,6 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
-const upload = multer({ storage: storage, limits: { fileSize: 1000000 * 2 } });
+const upload = multer({ storage: storage, limits: { fileSize: 1000000 } });
 
 export default upload;

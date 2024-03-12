@@ -24,7 +24,12 @@ const userSchema = new Schema(
       required: true,
     },
     avatar: {
-      type: String,
+      url: {
+        type: String,
+      },
+      publicId: {
+        type: String,
+      },
     },
     isDisable: {
       type: Boolean,
