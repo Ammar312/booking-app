@@ -11,20 +11,12 @@ const router = express.Router();
 
 router.post(
   "/addpark",
-  verifyToken("admin"),
+  verifyToken(["admin", "superadmin"]),
   upload.any("images"),
   addParkController
 );
-router.get(
-  "/allparks",
-  verifyToken("admin", ["superadmin", "admin"]),
-  getAllParks
-);
-router.put(
-  "/editpark",
-  verifyToken("admin", ["superadmin", "admin"]),
-  editPark
-);
-router.put("/deletepark", verifyToken("admin", ["superadmin"]), deletePark);
+router.get("/allparks", verifyToken(["superadmin", "admin"]), getAllParks);
+router.put("/editpark", verifyToken(["superadmin", "admin"]), editPark);
+router.put("/deletepark", verifyToken(["superadmin"]), deletePark);
 
 export default router;

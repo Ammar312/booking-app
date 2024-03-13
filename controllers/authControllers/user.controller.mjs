@@ -161,11 +161,20 @@ export const resetPasswordView = async (req, res) => {
 export const resetPasswordController = async (req, res) => {
   const { token } = req.query;
   const { newPassword, confirmPassword } = req.body;
+  if (!newPassword || !confirmPassword) {
+    return responseFunc(res, 403, "Required parameter missing");
+  }
   try {
     const decode = Jwt.verify(token, process.env.RESET_PASSWORD_KEY);
     if (!decode) return responseFunc(res, 403, "Token Expired");
     if (newPassword !== confirmPassword)
       return responseFunc(res, 403, "Password must be same");
+    if (confirmPassword.length < 6)
+      return responseFunc(
+        res,
+        403,
+        "Password must be equal and greater than 6"
+      );
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(confirmPassword, saltRounds);
     const resetPassword = await users.updateOne(

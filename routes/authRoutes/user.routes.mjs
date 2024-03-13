@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/signup", signupController);
 router.post("/login", loginController);
-router.get("/getprofile", verifyToken("user", ["user"]), getProfile);
+router.get("/getprofile", verifyToken(["user"]), getProfile);
 router.post("/forgotpassword", forgotPasswordController);
 router.get("/view/resetpassword", resetPasswordView);
 router.post("/reset-password", resetPasswordController);

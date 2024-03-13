@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import admins from "../../models/adminsModal/admin.modal.mjs";
 import users from "../../models/usersModal/users.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
-import { uploadCloudinary } from "../../utilis/cloudinary.mjs";
 
 export const getAllUsers = async (req, res) => {
   const page = Number(req.query.page) || 1;
@@ -56,40 +55,14 @@ export const updateUser = async (req, res) => {
     if (phonenumber) {
       updatedData.phonenumber = phonenumber;
     }
-    await admins.updateOne(
-      { _id: adminId, isDisable: false },
+    await users.updateOne(
+      { _id: userId, isDisable: false },
       { $set: updatedData }
     );
     responseFunc(res, 200, "User Updated Successfully");
   } catch (error) {
     console.log("updateUserError: ", error);
     responseFunc(res, 400, "Error in updating user");
-  }
-};
-
-export const updateUserAvatar = async (req, res) => {
-  const { userId } = req.body;
-  if (!mongoose.isValidObjectId(userId)) {
-    return responseFunc(res, 400, "Invalid userId");
-  }
-  try {
-    const { path } = req.file;
-    const avatar = await uploadCloudinary(path);
-    const result = await users.updateOne(
-      { _id: userId, isDisable: false },
-      {
-        $set: {
-          avatar: {
-            url: avatar.secure_url,
-            publicId: avatar.public_id,
-          },
-        },
-      }
-    );
-    responseFunc(res, 200, "Avatar Updated");
-  } catch (error) {
-    console.log("userAvatarError: ", error);
-    responseFunc(res, 400, "Error in updating user avatar");
   }
 };
 
@@ -181,6 +154,13 @@ export const updateAdmin = async (req, res) => {
       }
     });
     if (password) {
+      if (password.length < 6) {
+        return responseFunc(
+          res,
+          403,
+          "Password must be equal and greater than 6"
+        );
+      }
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
       updatedData.password = passwordHash;

@@ -3,11 +3,10 @@ import responseFunc from "../utilis/response.mjs";
 import admins from "../models/adminsModal/admin.modal.mjs";
 import users from "../models/usersModal/users.modal.mjs";
 
-const verifyToken = (role, allowedRoles) => async (req, res, next) => {
+const verifyToken = (allowedRoles) => async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
-  console.log("header", req.headers);
   if (!token) {
     return responseFunc(res, 401, "Unauthorized: No token provided");
   }
@@ -32,9 +31,9 @@ const verifyToken = (role, allowedRoles) => async (req, res, next) => {
 
     if (allowedRoles.includes(decoded.role)) {
       const isUser =
-        role === "admin"
-          ? await admins.findOne({ _id: decoded._id, isDisable: false })
-          : await users.findOne({ _id: decoded._id, isDisable: false });
+        decoded.role === "user"
+          ? await users.findOne({ _id: decoded._id, isDisable: false })
+          : await admins.findOne({ _id: decoded._id, isDisable: false });
       console.log("qwrety", isUser);
       if (isUser) {
         req.currentUser = decoded;
