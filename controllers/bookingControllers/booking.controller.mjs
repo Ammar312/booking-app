@@ -7,9 +7,11 @@ const d = new Date();
 const year = d.getFullYear();
 const month = d.getMonth() + 1;
 const datee = d.getDate();
-const currentDate = `${year}-${month.length === 2 ? month : `0${month}`}-${
-  datee.length === 2 ? datee : `0${datee}`
-}T00:00:00`;
+const formattedMonth = month < 10 ? `0${month}` : month;
+const formattedDate = datee < 10 ? `0${datee}` : datee;
+const currentDate = new Date(
+  `${year}-${formattedMonth}-${formattedDate}T00:00:00`
+);
 const st = `1970-01-01T00:00:00.000+00:00`;
 const et = `1970-01-01T23:59:00.000+00:00`;
 
@@ -25,10 +27,12 @@ export const availableParksInTimeAndDate = async (req, res) => {
   // console.log("be", b);
   // console.log("starttime: ", new Date(starttime));
   // console.log("endtime: ", new Date(endtime));
-  if (date < currentDate) {
+  console.log(currentDate);
+  console.log(date);
+  if (new Date(date) < currentDate) {
     return responseFunc(res, 400, "Invalid Date");
   }
-  if (!starttime > st || !endtime < et) {
+  if (!(starttime > st && endtime < et)) {
     return responseFunc(res, 400, "Invalid Time");
   }
   try {
@@ -37,7 +41,7 @@ export const availableParksInTimeAndDate = async (req, res) => {
       "parktiming.endtime": { $gte: new Date(endtime) },
       isDisable: false,
     });
-    console.log("availableParksInTime", availableParksInTime);
+    // console.log("availableParksInTime", availableParksInTime);
     if (availableParksInTime.length > 0) {
       const bookedParks = await bookedparks.find({
         date: date,

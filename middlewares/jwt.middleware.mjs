@@ -34,7 +34,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
         decoded.role === "user"
           ? await users.findOne({ _id: decoded._id, isDisable: false })
           : await admins.findOne({ _id: decoded._id, isDisable: false });
-      console.log("qwrety", isUser);
+      // console.log("qwrety", isUser);
       if (isUser) {
         req.currentUser = decoded;
         next();
