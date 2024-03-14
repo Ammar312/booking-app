@@ -21,6 +21,42 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const createUser = async (req, res) => {
+  const { firstname, lastname, email, phonenumber, password } = req.body;
+  if (!firstname || !lastname || !email || !phonenumber || !password) {
+    return responseFunc(res, 403, "Required parameter missing");
+  }
+  firstname.trim();
+  lastname.trim();
+  email.trim();
+  phonenumber.trim();
+  password.trim();
+  if (!email.includes("@"))
+    return responseFunc(res, 403, "Invalid Email: must contain @");
+  if (password.length < 6)
+    return responseFunc(res, 403, "Password must be equal and greater than 6");
+  try {
+    const result = await users.findOne({ email });
+    if (result) {
+      responseFunc(res, 403, "User already exist with this email");
+    } else {
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+      const result = await users.create({
+        firstname,
+        lastname,
+        email,
+        phonenumber,
+        password: passwordHash,
+      });
+      responseFunc(res, 200, "User Created Successfully");
+    }
+  } catch (error) {
+    console.log("userCreatedError ", error);
+    responseFunc(res, 400, "User created error", error);
+  }
+};
+
 export const deleteUser = async (req, res) => {
   const { userId } = req.body;
   if (!mongoose.isValidObjectId(userId)) {

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createAdmin,
+  createUser,
   deleteAdmin,
   deleteUser,
   getAllAdmins,
@@ -16,9 +17,10 @@ router.get("/alladmins", verifyToken(["superadmin", "admin"]), getAllAdmins);
 router.post("/createadmin", verifyToken(["superadmin"]), createAdmin);
 router.put("/deleteadmin", verifyToken(["superadmin"]), deleteAdmin);
 router.put("/updateadmin", verifyToken(["superadmin"]), updateAdmin);
-router.get("/allusers", verifyToken(["superadmin", "admin"]), getAllUsers);
 
 // User
+router.get("/allusers", verifyToken(["superadmin", "admin"]), getAllUsers);
+router.post("/createuser", verifyToken(["superadmin", "admin"]), createUser);
 router.put("/deleteuser", verifyToken(["superadmin"]), deleteUser);
 router.put("/updateuser", verifyToken(["superadmin", "admin"]), updateUser);
 
