@@ -3,6 +3,7 @@ import {
   availableParksInTimeAndDate,
   bookAParkController,
   cancelBooking,
+  getUserBookings,
   reschdeuleBooking,
 } from "../../controllers/bookingControllers/booking.controller.mjs";
 import verifyToken from "../../middlewares/jwt.middleware.mjs";
@@ -27,4 +28,5 @@ router.put(
   verifyToken(["superadmin", "admin", "user"]),
   reschdeuleBooking
 );
+router.get("/userbookings", verifyToken(["admin", "user"]), getUserBookings);
 export default router;

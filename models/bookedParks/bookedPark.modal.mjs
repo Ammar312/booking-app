@@ -38,8 +38,8 @@ const bookedParkSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["booked", "completed", "canceled"],
-      default: "booked",
+      enum: ["booked", "completed", "canceled", "pending"],
+      default: "pending",
     },
   },
   { timestamps: true }

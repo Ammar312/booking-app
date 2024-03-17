@@ -2,6 +2,7 @@ import moment from "moment";
 import parks from "../../models/parksModal/parks.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
 import bookedparks from "../../models/bookedParks/bookedPark.modal.mjs";
+import mongoose from "mongoose";
 
 const d = new Date();
 const year = d.getFullYear();
@@ -125,7 +126,7 @@ export const bookAParkController = async (req, res) => {
       totalPeoples,
       advancePayment,
     });
-    responseFunc(res, 200, "Park Book Successfully");
+    responseFunc(res, 200, "You will recieve a email of your booking soon.");
   } catch (error) {
     console.log("parkbookingerror", error);
     responseFunc(res, 400, "error");
@@ -136,7 +137,7 @@ export const cancelBooking = async (req, res) => {
   const { bookingId } = req.body;
   try {
     const changeStatus = await bookedparks.updateOne(
-      { _id: bookingId },
+      { _id: bookingId, $or: [{ status: "booked" }, { status: "pending" }] },
       {
         $set: { status: "canceled" },
       }
@@ -175,6 +176,39 @@ export const reschdeuleBooking = async (req, res) => {
   } catch (error) {
     console.log("reschdeule error: ", error);
     responseFunc(res, 400, "Error in rescheduling booking");
+  }
+};
+
+export const getUserBookings = async (req, res) => {
+  const { userId } = req.body;
+  if (!mongoose.isValidObjectId(_id)) {
+    return responseFunc(res, 400, "Invalid userId");
+  }
+  try {
+    const id = userId || req.currentUser._id;
+    const result = await bookedparks.find({ userId: id });
+    responseFunc(res, 200, "user bookings", result);
+  } catch (error) {
+    console.log("getUserBookingsError: ", error);
+    responseFunc(res, 400, "Error in getting user bookings");
+  }
+};
+
+export const getBookings = async (req, res) => {
+  const { status } = req.query;
+  const page = Number(req.query.page) || 1;
+  const pageSize = Number(req.query.pageSize) || 10;
+  const skip = (page - 1) * pageSize;
+  const filters = {};
+  if (status) {
+    filters.status = status;
+  }
+  try {
+    const result = await bookedparks.find(filters).skip(skip).limit(pageSize);
+    responseFunc(res, 200, "Get bookings Successfully", result);
+  } catch (error) {
+    console.log("getBookingsError: ", error);
+    responseFunc(res, 400, "Error in getting bookings");
   }
 };
 // const availableParks = await parks.aggregate([
