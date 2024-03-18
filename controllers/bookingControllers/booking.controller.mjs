@@ -180,13 +180,20 @@ export const reschdeuleBooking = async (req, res) => {
 };
 
 export const getUserBookings = async (req, res) => {
-  const { userId } = req.body;
-  if (!mongoose.isValidObjectId(_id)) {
+  const { userId } = req.query;
+  const { _id } = req.currentUser;
+  if (!mongoose.isValidObjectId(userId || _id)) {
     return responseFunc(res, 400, "Invalid userId");
   }
   try {
-    const id = userId || req.currentUser._id;
-    const result = await bookedparks.find({ userId: id });
+    const id = userId || _id;
+    const result = await bookedparks
+      .find({ userId: id })
+      .populate({ path: "parkId", select: "name location " });
+    if (!result.length) {
+      responseFunc(res, 200, "No booking yet", result);
+      return;
+    }
     responseFunc(res, 200, "user bookings", result);
   } catch (error) {
     console.log("getUserBookingsError: ", error);
@@ -195,22 +202,42 @@ export const getUserBookings = async (req, res) => {
 };
 
 export const getBookings = async (req, res) => {
-  const { status } = req.query;
+  const { status, date } = req.query;
   const page = Number(req.query.page) || 1;
   const pageSize = Number(req.query.pageSize) || 10;
   const skip = (page - 1) * pageSize;
   const filters = {};
+
   if (status) {
     filters.status = status;
   }
+
   try {
-    const result = await bookedparks.find(filters).skip(skip).limit(pageSize);
+    const result = await bookedparks
+      .find(filters)
+      .skip(skip)
+      .limit(pageSize)
+      .populate({
+        path: "userId",
+        select: "firstname lastname email phonenumber",
+      })
+      .populate({ path: "parkId", select: "name " });
     responseFunc(res, 200, "Get bookings Successfully", result);
   } catch (error) {
     console.log("getBookingsError: ", error);
     responseFunc(res, 400, "Error in getting bookings");
   }
 };
+// function isValidDate(dateString) {
+//   return !isNaN(Date.parse(dateString));
+// }
+// function formatDateToISO(date) {
+//   const year = date.getFullYear();
+//   const month = String(date.getMonth() + 1).padStart(2, "0"); // Adding leading zero if needed
+//   const day = String(date.getDate()).padStart(2, "0"); // Adding leading zero if needed
+
+//   return `${year}-${month}-${day}`;
+// }
 // const availableParks = await parks.aggregate([
 //   {
 //     $match: {

@@ -3,6 +3,7 @@ import {
   availableParksInTimeAndDate,
   bookAParkController,
   cancelBooking,
+  getBookings,
   getUserBookings,
   reschdeuleBooking,
 } from "../../controllers/bookingControllers/booking.controller.mjs";
@@ -29,4 +30,6 @@ router.put(
   reschdeuleBooking
 );
 router.get("/userbookings", verifyToken(["admin", "user"]), getUserBookings);
+router.get("/allbookings", verifyToken(["admin"]), getBookings);
+
 export default router;
