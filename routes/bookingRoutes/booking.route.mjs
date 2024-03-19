@@ -1,10 +1,12 @@
 import express from "express";
 import {
+  approveBooking,
   availableParksInTimeAndDate,
   bookAParkController,
   cancelBooking,
   getBookings,
   getUserBookings,
+  rejectBooking,
   reschdeuleBooking,
 } from "../../controllers/bookingControllers/booking.controller.mjs";
 import verifyToken from "../../middlewares/jwt.middleware.mjs";
@@ -31,5 +33,7 @@ router.put(
 );
 router.get("/userbookings", verifyToken(["admin", "user"]), getUserBookings);
 router.get("/allbookings", verifyToken(["admin"]), getBookings);
+router.put("/approvebooking", verifyToken(["admin"]), approveBooking);
+router.put("/rejectbooking", verifyToken(["admin"]), rejectBooking);
 
 export default router;

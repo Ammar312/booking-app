@@ -1,18 +1,19 @@
-import moment from "moment";
 import parks from "../../models/parksModal/parks.modal.mjs";
 import responseFunc from "../../utilis/response.mjs";
 import bookedparks from "../../models/bookedParks/bookedPark.modal.mjs";
 import mongoose from "mongoose";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import convertToUTCAndFormat from "../../utilis/convertToUtc.mjs";
 
+dayjs.extend(utc);
 const d = new Date();
 const year = d.getFullYear();
 const month = d.getMonth() + 1;
 const datee = d.getDate();
 const formattedMonth = month < 10 ? `0${month}` : month;
 const formattedDate = datee < 10 ? `0${datee}` : datee;
-const currentDate = new Date(
-  `${year}-${formattedMonth}-${formattedDate}T00:00:00`
-);
+const currentDate = `${year}-${formattedMonth}-${formattedDate}T00:00:00`;
 const st = `1970-01-01T00:00:00.000+00:00`;
 const et = `1970-01-01T23:59:00.000+00:00`;
 
@@ -28,9 +29,19 @@ export const availableParksInTimeAndDate = async (req, res) => {
   // console.log("be", b);
   // console.log("starttime: ", new Date(starttime));
   // console.log("endtime: ", new Date(endtime));
-  console.log(currentDate);
-  console.log(date);
-  if (new Date(date) < currentDate) {
+  // console.log(currentDate);
+  const utchour = dayjs(endtime).utc().hour();
+  const utcminute = dayjs(endtime).utc().minute();
+  const utcdate = dayjs.utc(`1970-01-01T${utchour}:${utcminute}:00`).isUTC();
+  // .format("YYYY-MM-DDTHH:mm:00");
+  const sw = dayjs(endtime).format();
+  // console.log(utchour);
+  // console.log(utcminute);
+  const utctime = convertToUTCAndFormat(endtime);
+  console.log(utctime);
+  console.log(new Date(utctime));
+  console.log(endtime);
+  if (date < currentDate) {
     return responseFunc(res, 400, "Invalid Date");
   }
   if (!(starttime > st && endtime < et)) {
@@ -74,18 +85,19 @@ export const bookAParkController = async (req, res) => {
     date,
     startTime,
     endTime,
-    totalCost,
     totalPeoples,
     advancePayment,
   } = req.body;
-
+  const utcstarttime = convertToUTCAndFormat(startTime);
+  const utcendtime = convertToUTCAndFormat(endTime);
+  console.log("utcstartime: ", utcstarttime);
+  console.log("utcendtime: ", utcendtime);
   if (
     !userId ||
     !parkId ||
     !date ||
     !startTime ||
     !endTime ||
-    !totalCost ||
     !totalPeoples ||
     !advancePayment
   ) {
@@ -96,17 +108,33 @@ export const bookAParkController = async (req, res) => {
     return responseFunc(res, 400, "Invalid Date");
   }
 
-  if (!startTime > st || !endTime < et) {
-    return responseFunc(res, 400, "Invalid Time");
-  }
+  // if (!startTime > st || !endTime < et) {
+  //   return responseFunc(res, 400, "Invalid Time");
+  // }
 
   try {
+    const isPark = await parks.findOne({
+      _id: parkId,
+      "parktiming.starttime": { $lte: endTime },
+      "parktiming.endtime": { $gte: startTime },
+      isDisable: "false",
+    });
+    if (!isPark) {
+      return responseFunc(res, 404, "This park does not exist");
+    }
+    if (totalPeoples > isPark.capacity) {
+      return responseFunc(
+        res,
+        403,
+        `This park has the capacity of ${isPark.capacity} peoples `
+      );
+    }
     const isBooked = await bookedparks.findOne({
       parkId,
       date: date,
       startTime: { $lte: endTime },
       endTime: { $gte: startTime },
-      status: "booked",
+      $or: [{ status: "pending" }, { status: "booked" }],
     });
     if (isBooked) {
       responseFunc(
@@ -122,7 +150,7 @@ export const bookAParkController = async (req, res) => {
       date,
       startTime,
       endTime,
-      totalCost,
+      totalCost: isPark.cost,
       totalPeoples,
       advancePayment,
     });
@@ -228,6 +256,47 @@ export const getBookings = async (req, res) => {
     responseFunc(res, 400, "Error in getting bookings");
   }
 };
+
+export const approveBooking = async (req, res) => {
+  const { _id } = req.body;
+  if (!_id) {
+    return responseFunc(res, 403, "Booking Id missing");
+  }
+  if (!mongoose.isValidObjectId(_id)) {
+    return responseFunc(res, 400, "Invalid Booking Id");
+  }
+  try {
+    const booking = await bookedparks
+      .findOne({ _id, status: "pending" })
+      .populate({ path: "userId", select: "firstname lastname email" });
+    console.log(booking);
+    if (!booking) {
+      return responseFunc(res, 404, "No booking found");
+    }
+    const { parkId, date, startTime, endTime } = booking;
+    const isBooked = await bookedparks.findOne({
+      parkId,
+      date: date,
+      startTime: { $lte: endTime },
+      endTime: { $gte: startTime },
+      status: "booked",
+    });
+    if (isBooked) {
+      responseFunc(
+        res,
+        409,
+        "This park is already booked at this date and time"
+      );
+      return;
+    }
+    responseFunc(res, 200, "Booking Approved");
+  } catch (error) {
+    console.log("ErrorInApproveBooking: ", error);
+    responseFunc(res, 400, "Error in approving booking");
+  }
+};
+export const rejectBooking = async (req, res) => {};
+
 // function isValidDate(dateString) {
 //   return !isNaN(Date.parse(dateString));
 // }
