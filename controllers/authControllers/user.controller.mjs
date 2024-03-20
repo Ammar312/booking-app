@@ -2,7 +2,7 @@ import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import responseFunc from "../../utilis/response.mjs";
 import users from "../../models/usersModal/users.modal.mjs";
-import sendResetPasswordEmail from "../../utilis/nodemailer.mjs";
+import { sendResetPasswordEmail } from "../../utilis/nodemailer.mjs";
 
 export const signupController = async (req, res) => {
   const { firstname, lastname, email, phonenumber, password } = req.body;

@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-const sendResetPasswordEmail = (email, token) => {
+export const sendResetPasswordEmail = (email, token) => {
   const transporter = nodemailer.createTransport({
     service: "Gmail",
     host: "smtp.gmail.com",
@@ -25,4 +25,30 @@ const sendResetPasswordEmail = (email, token) => {
     }
   });
 };
-export default sendResetPasswordEmail;
+
+export const sendConfirmationEmail = (email, subject, text) => {
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.YOUR_EMAIL,
+      pass: process.env.APP_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.YOUR_EMAIL,
+    to: email,
+    subject,
+    html: text,
+  };
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log("Error sending email: ", err);
+    } else {
+      console.log("Email sent: ", info.response);
+    }
+  });
+};

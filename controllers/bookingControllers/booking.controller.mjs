@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import convertToUTCAndFormat from "../../utilis/convertToUtc.mjs";
+import approvals from "../../models/approvalModal/approvals.modal.mjs";
+import { sendConfirmationEmail } from "../../utilis/nodemailer.mjs";
 
 dayjs.extend(utc);
 const d = new Date();
@@ -139,7 +141,7 @@ export const bookAParkController = async (req, res) => {
     if (isBooked) {
       responseFunc(
         res,
-        409,
+        403,
         "This park is already booked at this date and time"
       );
       return;
@@ -153,6 +155,10 @@ export const bookAParkController = async (req, res) => {
       totalCost: isPark.cost,
       totalPeoples,
       advancePayment,
+    });
+    const setApproval = await approvals.create({
+      booking: bookPark._id,
+      user: userId,
     });
     responseFunc(res, 200, "You will recieve a email of your booking soon.");
   } catch (error) {
@@ -188,12 +194,12 @@ export const reschdeuleBooking = async (req, res) => {
       startTime: { $lte: endTime },
       endTime: { $gte: startTime },
       date,
-      status: "booked",
+      $or: [{ status: "booked" }, { status: "pending" }],
     });
     if (isBooked) {
       return responseFunc(
         res,
-        409,
+        403,
         "This park is already booked at this date and time"
       );
     } else {
@@ -249,7 +255,7 @@ export const getBookings = async (req, res) => {
         path: "userId",
         select: "firstname lastname email phonenumber",
       })
-      .populate({ path: "parkId", select: "name " });
+      .populate({ path: "parkId", select: "name" });
     responseFunc(res, 200, "Get bookings Successfully", result);
   } catch (error) {
     console.log("getBookingsError: ", error);
@@ -258,17 +264,18 @@ export const getBookings = async (req, res) => {
 };
 
 export const approveBooking = async (req, res) => {
-  const { _id } = req.body;
-  if (!_id) {
+  const { bookingId } = req.body;
+  if (!bookingId) {
     return responseFunc(res, 403, "Booking Id missing");
   }
-  if (!mongoose.isValidObjectId(_id)) {
+  if (!mongoose.isValidObjectId(bookingId)) {
     return responseFunc(res, 400, "Invalid Booking Id");
   }
   try {
     const booking = await bookedparks
-      .findOne({ _id, status: "pending" })
-      .populate({ path: "userId", select: "firstname lastname email" });
+      .findOne({ _id: bookingId, status: "pending" })
+      .populate({ path: "userId", select: "firstname lastname email" })
+      .populate({ path: "parkId", select: "name" });
     console.log(booking);
     if (!booking) {
       return responseFunc(res, 404, "No booking found");
@@ -284,18 +291,88 @@ export const approveBooking = async (req, res) => {
     if (isBooked) {
       responseFunc(
         res,
-        409,
+        403,
         "This park is already booked at this date and time"
       );
       return;
     }
+    const updateBookingStatus = await bookedparks.updateOne(
+      {
+        _id: bookingId,
+        status: "pending",
+      },
+      { $set: { status: "booked" } }
+    );
+    const updateApprovalStatus = await approvals.updateOne(
+      {
+        booking: bookingId,
+        status: "pending",
+      },
+      { $set: { status: "approved", approver: req.currentUser._id } }
+    );
+    console.log("updateApprovalStatus: ", updateApprovalStatus);
+    const mailDate = dayjs(date).format("DD-MMM-YYYY");
+    const mailStartTime = dayjs(startTime).format("HH:mm");
+    const mailEndTime = dayjs(endTime).format("HH:mm");
+    const email = booking.userId.email;
+    const subject = "Booking Confirmation Email";
+    const text = `<h3>Dear ${booking.userId.firstname}</h3>,<p>I hope this email finds you well. I am pleased to inform you that your request for <b> ${booking.parkId.name}</b> booking on ${mailDate}(${mailStartTime}-${mailEndTime}) has been approved.</p>
+     `;
+    sendConfirmationEmail(email, subject, text);
     responseFunc(res, 200, "Booking Approved");
   } catch (error) {
     console.log("ErrorInApproveBooking: ", error);
     responseFunc(res, 400, "Error in approving booking");
   }
 };
-export const rejectBooking = async (req, res) => {};
+export const rejectBooking = async (req, res) => {
+  const { bookingId } = req.body;
+  if (!bookingId) {
+    return responseFunc(res, 403, "Booking Id missing");
+  }
+  if (!mongoose.isValidObjectId(bookingId)) {
+    return responseFunc(res, 400, "Invalid Booking Id");
+  }
+  try {
+    const booking = await bookedparks
+      .findOne({ _id: bookingId, status: "pending" })
+      .populate({ path: "userId", select: "firstname lastname email" })
+      .populate({ path: "parkId", select: "name" });
+    console.log(booking);
+    if (!booking) {
+      return responseFunc(res, 404, "No booking found");
+    }
+    const { date, startTime, endTime } = booking;
+    const updateBookingStatus = await bookedparks.updateOne(
+      {
+        _id: bookingId,
+        status: "pending",
+      },
+      { $set: { status: "rejected" } }
+    );
+    const updateApprovalStatus = await approvals.updateOne(
+      {
+        booking: bookingId,
+        status: "pending",
+      },
+      { $set: { status: "rejected", approver: req.currentUser._id } }
+    );
+
+    const mailDate = dayjs(date).format("DD-MMM-YYYY");
+    const mailStartTime = dayjs(startTime).format("HH:mm");
+    const mailEndTime = dayjs(endTime).format("HH:mm");
+    const email = booking.userId.email;
+    const subject = "Rejection of Park Booking Request";
+    const text = `<h3>Hello ${booking.userId.firstname}</h3>,<p>I hope this message finds you well. I'm writing to inform you that, unfortunately, we are unable to approve your recent request for ${booking.parkId.name} booking on ${mailDate} .</p><p>After careful consideration of your request, we regret to inform you that we are unable to accommodate your booking at this time (${mailStartTime}-${mailEndTime}). The decision was made based on the  Maintenance or renovation work scheduled for the requested park</p>
+    <p>We understand that this may cause inconvenience, and we sincerely apologize for any disruption to your plans. Please rest assured that we have explored all available options before reaching this decision.</p>
+      `;
+    sendConfirmationEmail(email, subject, text);
+    responseFunc(res, 200, "Booking Rejected");
+  } catch (error) {
+    console.log("ErrorInRejectBooking: ", error);
+    responseFunc(res, 400, "Error in rejecting booking");
+  }
+};
 
 // function isValidDate(dateString) {
 //   return !isNaN(Date.parse(dateString));
