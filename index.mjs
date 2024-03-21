@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/v1", apiRoutes);
-cron.schedule(" 0 0 * * *", async () => {
+cron.schedule(" 0 */8 * * *", async () => {
   app.use(await checkCompleted());
 });
 connectMongoDB(process.env.MONGO_URI).then(() => {

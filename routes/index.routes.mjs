@@ -4,6 +4,7 @@ import parkRouter from "./parkRoutes/park.route.mjs";
 import bookingRouter from "./bookingRoutes/booking.route.mjs";
 import userAdminCrudRouter from "./userAdminCrudRoutes/userAdminCrud.route.mjs";
 import userProfileUpdateRouter from "./userProfileUpdateRoutes/userProfileUpdate.routes.mjs";
+import { bookingExcelFile } from "../controllers/exportExcelFile/exportExcel.controller.mjs";
 const router = express.Router();
 
 router.use(authRouter);
@@ -11,5 +12,6 @@ router.use(parkRouter);
 router.use(bookingRouter);
 router.use(userAdminCrudRouter);
 router.use(userProfileUpdateRouter);
+router.get("/bookingsexcel", bookingExcelFile);
 
 export default router;
