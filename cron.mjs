@@ -11,18 +11,21 @@ const checkCompleted = async () => {
     const fullDate = `${year}-${formattedMonth}-${formattedDate}T00:00:00.000+00:00`;
     const hours = d.getHours();
     const minutes = d.getMinutes();
+    const seconds = d.getSeconds();
     const formattedHours = hours < 10 ? `0${hours}` : hours;
     const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    const time = `1970-01-01T${formattedHours}:${formattedMinutes}:00`;
+    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    const time = `1970-01-01T${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
     const result = await bookedparks.updateMany(
       {
         date: { $lte: fullDate },
-        endTime: { $lte: time },
+        endTime: { $lt: time },
         status: "booked",
       },
       { $set: { status: "completed" } }
     );
-
+    console.log(fullDate);
+    console.log(time);
     console.log(result);
   } catch (error) {
     console.log("checkCompletedError", error);
