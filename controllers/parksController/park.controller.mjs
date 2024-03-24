@@ -35,8 +35,9 @@ export const addParkController = async (req, res) => {
     const files = req.files;
     const urls = [];
     for (const file of files) {
-      const { path } = file;
-      const img = await uploadCloudinary(path);
+      const { buffer } = file;
+      const img = await uploadCloudinary(buffer);
+      // const { path } = file;
       urls.push(img.secure_url);
     }
     const startTimeDate = new Date(starttime);
