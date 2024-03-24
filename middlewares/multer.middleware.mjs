@@ -1,4 +1,17 @@
 import multer from "multer";
+import fs from "fs";
+
+// Function to ensure that the uploads directory exists
+const ensureUploadsDirectory = () => {
+  const uploadsDir = "./uploads";
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+  }
+};
+
+// Call the function to ensure uploads directory exists
+ensureUploadsDirectory();
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./uploads");
