@@ -33,10 +33,11 @@ export const addParkController = async (req, res) => {
       return responseFunc(res, 403, "Images Required!");
     }
     const files = req.files;
+    console.log("parkfiles ", files);
     const urls = [];
     for (const file of files) {
-      const { path } = file;
-      const img = await uploadCloudinary(path);
+      const { buffer } = file;
+      const img = await uploadCloudinary(buffer);
       // const { path } = file;
       urls.push(img.secure_url);
     }
