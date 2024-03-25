@@ -46,8 +46,8 @@ export const updateUserAvatar = async (req, res) => {
       return responseFunc(res, 404, "User Not Found");
     }
     const currentAvatar = user.avatar;
-    const { buffer } = req.file;
-    const avatar = await uploadCloudinary(buffer);
+    const { path } = req.file;
+    const avatar = await uploadCloudinary(path);
     const result = await users.updateOne(
       { _id, isDisable: false },
       {
