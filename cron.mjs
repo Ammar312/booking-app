@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import bookedparks from "./models/bookedParks/bookedPark.modal.mjs";
-const checkCompleted = async () => {
+import responseFunc from "./utilis/response.mjs";
+const checkCompleted = async (req, res) => {
   try {
     const d = new Date();
     const year = d.getFullYear();
@@ -18,8 +19,8 @@ const checkCompleted = async () => {
     const time = `1970-01-01T${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
     const result = await bookedparks.updateMany(
       {
-        date: { $lte: fullDate },
-        endTime: { $lt: time },
+        date: { $lt: fullDate },
+        // endTime: { $lt: time },
         status: "booked",
       },
       { $set: { status: "completed" } }
@@ -27,8 +28,10 @@ const checkCompleted = async () => {
     console.log(fullDate);
     console.log(time);
     console.log(result);
+    responseFunc(res, 200, "Check completed");
   } catch (error) {
     console.log("checkCompletedError", error);
+    responseFunc(res, 400, "error in completed");
   }
 };
 
