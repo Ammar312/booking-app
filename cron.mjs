@@ -28,10 +28,10 @@ const checkCompleted = async (req, res) => {
     console.log(fullDate);
     console.log(time);
     console.log(result);
-    responseFunc(res, 200, "Check completed");
+    // responseFunc(res, 200, "Check completed");
   } catch (error) {
     console.log("checkCompletedError", error);
-    responseFunc(res, 400, "error in completed");
+    // responseFunc(res, 400, "error in completed");
   }
 };
 

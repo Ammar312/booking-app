@@ -20,9 +20,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/v1", apiRoutes);
-// cron.schedule(" * * * * *", async () => {
-//   app.use(await checkCompleted());
-// });
+cron.schedule(" 0 * * * *", async () => {
+  app.use(await checkCompleted());
+});
 connectMongoDB(process.env.MONGO_URI).then(() => {
   app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);

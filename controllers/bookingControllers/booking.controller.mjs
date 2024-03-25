@@ -29,8 +29,8 @@ export const availableParksInTimeAndDate = async (req, res) => {
   // const b = moment.utc(new Date(endtime)).local().format();
   // console.log("as", a);
   // console.log("be", b);
-  // console.log("starttime: ", new Date(starttime));
-  // console.log("endtime: ", new Date(endtime));
+  console.log("starttime: ", starttime);
+  console.log("endtime: ", endtime);
   // console.log(currentDate);
   const utchour = dayjs(endtime).utc().hour();
   const utcminute = dayjs(endtime).utc().minute();
@@ -61,7 +61,7 @@ export const availableParksInTimeAndDate = async (req, res) => {
         date: date,
         startTime: { $lte: endtime },
         endTime: { $gte: starttime },
-        status: "booked",
+        $or: [{ status: "pending" }, { status: "booked" }],
       });
       console.log("bookedParks", bookedParks);
       const availableParks = availableParksInTime.filter((park) => {
@@ -92,6 +92,8 @@ export const bookAParkController = async (req, res) => {
   } = req.body;
   const utcstarttime = convertToUTCAndFormat(startTime);
   const utcendtime = convertToUTCAndFormat(endTime);
+  console.log("starttime: ", startTime);
+  console.log("endtime: ", endTime);
   console.log("utcstartime: ", utcstarttime);
   console.log("utcendtime: ", utcendtime);
   if (
@@ -122,7 +124,11 @@ export const bookAParkController = async (req, res) => {
       isDisable: "false",
     });
     if (!isPark) {
-      return responseFunc(res, 404, "This park does not exist");
+      return responseFunc(
+        res,
+        404,
+        "This park does not available at this time"
+      );
     }
     if (totalPeoples > isPark.capacity) {
       return responseFunc(
