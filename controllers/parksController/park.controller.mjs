@@ -27,10 +27,10 @@ export const addParkController = async (req, res) => {
       !capacity ||
       !cost
     ) {
-      return responseFunc(res, 403, "Required parameter missing");
+      return responseFunc(res, 403, true, "Required parameter missing");
     }
     if (!req.files) {
-      return responseFunc(res, 403, "Images Required!");
+      return responseFunc(res, 403, true, "Images Required!");
     }
     const files = req.files;
     console.log("parkfiles ", files);
@@ -59,10 +59,10 @@ export const addParkController = async (req, res) => {
       capacity,
       cost,
     });
-    responseFunc(res, 200, "park added");
+    responseFunc(res, 200, false, "park added");
   } catch (error) {
     console.log("addparkError", error);
-    responseFunc(res, 400, "error in add park");
+    responseFunc(res, 400, true, "error in add park");
   }
 };
 
@@ -75,17 +75,17 @@ export const getAllParks = async (req, res) => {
       .find({ isDisable: false })
       .skip(skip)
       .limit(pageSize);
-    responseFunc(res, 200, "Successfully get all parks", result);
+    responseFunc(res, 200, false, "Successfully get all parks", result);
   } catch (error) {
     console.log("getAllParksError: ", error);
-    responseFunc(res, 400, "Error in getting parks");
+    responseFunc(res, 400, true, "Error in getting parks");
   }
 };
 export const editPark = async (req, res) => {
   // const {parkId,name,location,description,country,city,starttime,endtime,capacity,cost}=req.body
   const { parkId, starttime, endtime, ...updateFields } = req.body;
   if (!mongoose.isValidObjectId(parkId)) {
-    return responseFunc(res, 400, "Invalid ParkId");
+    return responseFunc(res, 400, true, "Invalid ParkId");
   }
   try {
     let updatedData = {};
@@ -106,26 +106,26 @@ export const editPark = async (req, res) => {
       { _id: parkId, isDisable: false },
       { $set: updatedData }
     );
-    responseFunc(res, 200, "Park Updated Successfully");
+    responseFunc(res, 200, false, "Park Updated Successfully");
   } catch (error) {
     console.log("editParkError: ", error);
-    responseFunc(res, 400, "Error in updating park");
+    responseFunc(res, 400, true, "Error in updating park");
   }
 };
 
 export const deletePark = async (req, res) => {
   const { parkId } = req.body;
   if (!mongoose.isValidObjectId(parkId)) {
-    return responseFunc(res, 400, "Invalid ParkId");
+    return responseFunc(res, 400, true, "Invalid ParkId");
   }
   try {
     const result = await parks.updateOne(
       { _id: parkId, isDisable: false },
       { $set: { isDisable: true } }
     );
-    responseFunc(res, 200, "Park Deleted Successfully");
+    responseFunc(res, 200, false, "Park Deleted Successfully");
   } catch (error) {
     console.log("deleteParkError: ", error);
-    responseFunc(res, 400, "Error in deleting park");
+    responseFunc(res, 400, true, "Error in deleting park");
   }
 };

@@ -10,11 +10,11 @@ export const updateUserProfile = async (req, res) => {
   const { _id } = req.currentUser;
   const { lastname, firstname, phonenumber } = req.body;
   if (!mongoose.isValidObjectId(_id)) {
-    return responseFunc(res, 400, "Invalid userId");
+    return responseFunc(res, 400, true, "Invalid userId");
   }
   const user = await users.findOne({ _id, isDisable: false });
   if (!user) {
-    return responseFunc(res, 404, "User Not Found");
+    return responseFunc(res, 404, true, "User Not Found");
   }
   try {
     let updatedData = {};
@@ -28,22 +28,22 @@ export const updateUserProfile = async (req, res) => {
       updatedData.phonenumber = phonenumber;
     }
     await users.updateOne({ _id, isDisable: false }, { $set: updatedData });
-    responseFunc(res, 200, "User Updated Successfully");
+    responseFunc(res, 200, false, "User Updated Successfully");
   } catch (error) {
     console.log("updateUserError: ", error);
-    responseFunc(res, 400, "Error in updating user");
+    responseFunc(res, 400, true, "Error in updating user");
   }
 };
 
 export const updateUserAvatar = async (req, res) => {
   const { _id } = req.currentUser;
   if (!mongoose.isValidObjectId(_id)) {
-    return responseFunc(res, 400, "Invalid userId");
+    return responseFunc(res, 400, true, "Invalid userId");
   }
   try {
     const user = await users.findOne({ _id, isDisable: false });
     if (!user) {
-      return responseFunc(res, 404, "User Not Found");
+      return responseFunc(res, 404, true, "User Not Found");
     }
     const currentAvatar = user.avatar;
     console.log("file ", req.file);
@@ -64,9 +64,9 @@ export const updateUserAvatar = async (req, res) => {
     if (currentAvatar && currentAvatar.publicId) {
       await deleteImgCloudinary(currentAvatar.publicId);
     }
-    responseFunc(res, 200, "Avatar Updated");
+    responseFunc(res, 200, false, "Avatar Updated");
   } catch (error) {
     console.log("userAvatarError: ", error);
-    responseFunc(res, 400, "Error in updating user avatar");
+    responseFunc(res, 400, true, "Error in updating user avatar");
   }
 };

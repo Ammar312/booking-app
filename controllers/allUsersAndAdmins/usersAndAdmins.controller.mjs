@@ -14,17 +14,17 @@ export const getAllUsers = async (req, res) => {
       .find({ isDisable: false }, { password: 0 })
       .skip(skip)
       .limit(pageSize);
-    responseFunc(res, 200, "Users", result);
+    responseFunc(res, 200, false, "Users", result);
   } catch (error) {
     console.log("allUsersError: ", error);
-    responseFunc(res, 400, "Error in getting users");
+    responseFunc(res, 400, true, "Error in getting users");
   }
 };
 
 export const createUser = async (req, res) => {
   const { firstname, lastname, email, phonenumber, password } = req.body;
   if (!firstname || !lastname || !email || !phonenumber || !password) {
-    return responseFunc(res, 403, "Required parameter missing");
+    return responseFunc(res, 403, true, "Required parameter missing");
   }
   firstname.trim();
   lastname.trim();
@@ -32,13 +32,18 @@ export const createUser = async (req, res) => {
   phonenumber.trim();
   password.trim();
   if (!email.includes("@"))
-    return responseFunc(res, 403, "Invalid Email: must contain @");
+    return responseFunc(res, 403, true, "Invalid Email: must contain @");
   if (password.length < 6)
-    return responseFunc(res, 403, "Password must be equal and greater than 6");
+    return responseFunc(
+      res,
+      403,
+      true,
+      "Password must be equal and greater than 6"
+    );
   try {
     const result = await users.findOne({ email });
     if (result) {
-      responseFunc(res, 403, "User already exist with this email");
+      responseFunc(res, 403, true, "User already exist with this email");
     } else {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -49,18 +54,18 @@ export const createUser = async (req, res) => {
         phonenumber,
         password: passwordHash,
       });
-      responseFunc(res, 200, "User Created Successfully");
+      responseFunc(res, 200, false, "User Created Successfully");
     }
   } catch (error) {
     console.log("userCreatedError ", error);
-    responseFunc(res, 400, "User created error", error);
+    responseFunc(res, 400, true, "User created error", error);
   }
 };
 
 export const deleteUser = async (req, res) => {
   const { userId } = req.body;
   if (!mongoose.isValidObjectId(userId)) {
-    return responseFunc(res, 400, "Invalid userId");
+    return responseFunc(res, 400, true, "Invalid userId");
   }
 
   try {
@@ -68,17 +73,17 @@ export const deleteUser = async (req, res) => {
       { _id: userId, isDisable: false },
       { $set: { isDisable: true } }
     );
-    responseFunc(res, 200, "User deleted successfully");
+    responseFunc(res, 200, false, "User deleted successfully");
   } catch (error) {
     console.log("deleteUserError: ", error);
-    responseFunc(res, 400, "Error in Deleting user");
+    responseFunc(res, 400, true, "Error in Deleting user");
   }
 };
 
 export const updateUser = async (req, res) => {
   const { userId, lastname, firstname, phonenumber } = req.body;
   if (!mongoose.isValidObjectId(userId)) {
-    return responseFunc(res, 400, "Invalid userId");
+    return responseFunc(res, 400, true, "Invalid userId");
   }
   try {
     let updatedData = {};
@@ -95,10 +100,10 @@ export const updateUser = async (req, res) => {
       { _id: userId, isDisable: false },
       { $set: updatedData }
     );
-    responseFunc(res, 200, "User Updated Successfully");
+    responseFunc(res, 200, false, "User Updated Successfully");
   } catch (error) {
     console.log("updateUserError: ", error);
-    responseFunc(res, 400, "Error in updating user");
+    responseFunc(res, 400, true, "Error in updating user");
   }
 };
 
@@ -111,30 +116,35 @@ export const getAllAdmins = async (req, res) => {
       .find({ isDisable: false }, { password: 0 })
       .skip(skip)
       .limit(pageSize);
-    responseFunc(res, 200, "Admins", result);
+    responseFunc(res, 200, false, "Admins", result);
   } catch (error) {
     console.log("allAdminsError: ", error);
-    responseFunc(res, 400, "Error in getting admins");
+    responseFunc(res, 400, true, "Error in getting admins");
   }
 };
 
 export const createAdmin = async (req, res) => {
   const { firstname, lastname, email, password, role } = req.body;
   if (!firstname || !lastname || !email || !password) {
-    return responseFunc(res, 403, "Required parameter missing");
+    return responseFunc(res, 403, true, "Required parameter missing");
   }
   firstname.trim();
   lastname.trim();
   email.trim();
   password.trim();
   if (!email.includes("@"))
-    return responseFunc(res, 403, "Email must contain @");
+    return responseFunc(res, 403, true, "Email must contain @");
   if (password.length < 6)
-    return responseFunc(res, 403, "Password must be equal and greater than 6");
+    return responseFunc(
+      res,
+      403,
+      true,
+      "Password must be equal and greater than 6"
+    );
   try {
     const result = await admins.findOne({ email });
     if (result) {
-      responseFunc(res, 403, "User already exist with this email");
+      responseFunc(res, 403, true, "User already exist with this email");
     } else {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -146,18 +156,18 @@ export const createAdmin = async (req, res) => {
         role,
       });
 
-      responseFunc(res, 200, `${result.role} created successfully`);
+      responseFunc(res, 200, false, `${result.role} created successfully`);
     }
   } catch (error) {
     console.log("createAdminError ", error);
-    responseFunc(res, 400, "Error in creating admin");
+    responseFunc(res, 400, true, "Error in creating admin");
   }
 };
 
 export const deleteAdmin = async (req, res) => {
   const { adminId } = req.body;
   if (!mongoose.isValidObjectId(adminId)) {
-    return responseFunc(res, 400, "Invalid adminId");
+    return responseFunc(res, 400, true, "Invalid adminId");
   }
 
   try {
@@ -165,17 +175,17 @@ export const deleteAdmin = async (req, res) => {
       { _id: adminId, isDisable: false },
       { $set: { isDisable: true } }
     );
-    responseFunc(res, 200, "Admin deleted successfully", result);
+    responseFunc(res, 200, false, "Admin deleted successfully", result);
   } catch (error) {
     console.log("deleteAdminError: ", error);
-    responseFunc(res, 400, "Error in deleting admin");
+    responseFunc(res, 400, true, "Error in deleting admin");
   }
 };
 
 export const updateAdmin = async (req, res) => {
   const { adminId, password, ...updateFields } = req.body;
   if (!mongoose.isValidObjectId(adminId)) {
-    return responseFunc(res, 400, "Invalid adminId");
+    return responseFunc(res, 400, true, "Invalid adminId");
   }
 
   try {
@@ -194,6 +204,7 @@ export const updateAdmin = async (req, res) => {
         return responseFunc(
           res,
           403,
+          true,
           "Password must be equal and greater than 6"
         );
       }
@@ -205,9 +216,9 @@ export const updateAdmin = async (req, res) => {
       { _id: adminId, isDisable: false },
       { $set: updatedData }
     );
-    responseFunc(res, 200, "Admin Updated Successfully");
+    responseFunc(res, 200, false, "Admin Updated Successfully");
   } catch (error) {
     console.log("updateAdminError: ", error);
-    responseFunc(res, 400, "Error in updating admin");
+    responseFunc(res, 400, true, "Error in updating admin");
   }
 };

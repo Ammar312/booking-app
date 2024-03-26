@@ -59,6 +59,7 @@ export const bookingExcelFile = async (req, res) => {
         responseFunc(
           res,
           200,
+          false,
           "File created successfully",
           `${path}/bookings.xlsx`
         );
@@ -66,6 +67,6 @@ export const bookingExcelFile = async (req, res) => {
     console.log("data", data);
   } catch (error) {
     console.log("errorBookingFile", error);
-    responseFunc(res, 400, "Error in Excel file");
+    responseFunc(res, 400, true, "Error in Excel file");
   }
 };

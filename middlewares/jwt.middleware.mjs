@@ -8,7 +8,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return responseFunc(res, 401, "Unauthorized: No token provided");
+    return responseFunc(res, 401, true, "Unauthorized: No token provided");
   }
 
   try {
@@ -24,7 +24,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
         next();
         return;
       } else {
-        responseFunc(res, 401, "Invalid User");
+        responseFunc(res, 401, true, "Invalid User");
       }
       return;
     }
@@ -39,12 +39,13 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
         req.currentUser = decoded;
         next();
       } else {
-        responseFunc(res, 401, "Invalid User");
+        responseFunc(res, 401, true, "Invalid User");
       }
     } else {
       responseFunc(
         res,
         403,
+        true,
         "Forbidden: You do not have permission to access this resource"
       );
     }
@@ -52,7 +53,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
     console.log("token verified");
   } catch (error) {
     console.log("expiryError ", error);
-    responseFunc(res, 401, "Unauthorized: Invalid token");
+    responseFunc(res, 401, true, "Unauthorized: Invalid token");
     return;
   }
 };

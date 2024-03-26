@@ -22,7 +22,7 @@ const et = `1970-01-01T23:59:00.000+00:00`;
 export const availableParksInTimeAndDate = async (req, res) => {
   const { date, starttime, endtime } = req.body;
   if (!date || !starttime || !endtime) {
-    return responseFunc(res, 403, "Required parameter missing");
+    return responseFunc(res, 403, true, "Required parameter missing");
   }
 
   // const a = moment.utc(new Date(starttime)).local().format();
@@ -44,10 +44,10 @@ export const availableParksInTimeAndDate = async (req, res) => {
   console.log(new Date(utctime));
   console.log(endtime);
   if (date < currentDate) {
-    return responseFunc(res, 400, "Invalid Date");
+    return responseFunc(res, 400, true, "Invalid Date");
   }
   if (!(starttime > st && endtime < et)) {
-    return responseFunc(res, 400, "Invalid Time");
+    return responseFunc(res, 400, true, "Invalid Time");
   }
   try {
     const availableParksInTime = await parks.find({
@@ -69,15 +69,20 @@ export const availableParksInTimeAndDate = async (req, res) => {
           (bookedPark) => bookedPark.parkId.toString() === park._id.toString()
         );
       });
-      responseFunc(res, 200, "Available parks", availableParks);
+      responseFunc(res, 200, false, "Available parks", availableParks);
     } else {
-      responseFunc(res, 200, "None of the parks are open in this time range");
+      responseFunc(
+        res,
+        200,
+        false,
+        "None of the parks are open in this time range"
+      );
     }
 
     // responseFunc(res, 200, "get", availableParksInTime);
   } catch (error) {
     console.log("parkbookingerror", error);
-    responseFunc(res, 400, "Error in finding available parks");
+    responseFunc(res, 400, true, "Error in finding available parks");
   }
 };
 export const bookAParkController = async (req, res) => {
@@ -105,11 +110,11 @@ export const bookAParkController = async (req, res) => {
     !totalPeoples ||
     !advancePayment
   ) {
-    return responseFunc(res, 403, "Required parameter missing");
+    return responseFunc(res, 403, true, "Required parameter missing");
   }
 
   if (date < currentDate) {
-    return responseFunc(res, 400, "Invalid Date");
+    return responseFunc(res, 400, true, "Invalid Date");
   }
 
   // if (!startTime > st || !endTime < et) {
@@ -127,6 +132,7 @@ export const bookAParkController = async (req, res) => {
       return responseFunc(
         res,
         404,
+        true,
         "This park does not available at this time"
       );
     }
@@ -134,8 +140,12 @@ export const bookAParkController = async (req, res) => {
       return responseFunc(
         res,
         403,
+        true,
         `This park has the capacity of ${isPark.capacity} peoples `
       );
+    }
+    if (advancePayment > isPark.cost) {
+      return responseFunc(res, 403, true, "Unexpected payment!");
     }
     const isBooked = await bookedparks.findOne({
       parkId,
@@ -148,6 +158,7 @@ export const bookAParkController = async (req, res) => {
       responseFunc(
         res,
         403,
+        true,
         "This park is already booked at this date and time"
       );
       return;
@@ -166,10 +177,15 @@ export const bookAParkController = async (req, res) => {
       booking: bookPark._id,
       user: userId,
     });
-    responseFunc(res, 200, "You will recieve a email of your booking soon.");
+    responseFunc(
+      res,
+      200,
+      false,
+      "You will recieve a email of your booking soon."
+    );
   } catch (error) {
     console.log("parkbookingerror", error);
-    responseFunc(res, 400, "error");
+    responseFunc(res, 400, true, "error");
   }
 };
 
@@ -182,17 +198,17 @@ export const cancelBooking = async (req, res) => {
         $set: { status: "canceled" },
       }
     );
-    responseFunc(res, 200, "Your booking has been canceled.");
+    responseFunc(res, 200, false, "Your booking has been canceled.");
   } catch (error) {
     console.log("cancelBooking: ", error);
-    responseFunc(res, 400, "Error in cancel booking");
+    responseFunc(res, 400, true, "Error in cancel booking");
   }
 };
 
 export const reschdeuleBooking = async (req, res) => {
   const { startTime, endTime, bookingId, date, parkId } = req.body;
   if (!startTime || !endTime || !bookingId || !parkId || !date) {
-    return responseFunc(res, 403, "Required Parameter Missing");
+    return responseFunc(res, 403, true, "Required Parameter Missing");
   }
   try {
     const isBooked = await bookedparks.findOne({
@@ -206,16 +222,17 @@ export const reschdeuleBooking = async (req, res) => {
       return responseFunc(
         res,
         403,
+        true,
         "This park is already booked at this date and time"
       );
     } else {
       const updated = { startTime, endTime, date };
       await bookedparks.updateOne({ _id: bookingId }, { $set: updated });
-      responseFunc(res, 200, "Booking rescheduled");
+      responseFunc(res, 200, false, "Booking rescheduled");
     }
   } catch (error) {
     console.log("reschdeule error: ", error);
-    responseFunc(res, 400, "Error in rescheduling booking");
+    responseFunc(res, 400, true, "Error in rescheduling booking");
   }
 };
 
@@ -223,7 +240,7 @@ export const getUserBookings = async (req, res) => {
   const { userId } = req.query;
   const { _id } = req.currentUser;
   if (!mongoose.isValidObjectId(userId || _id)) {
-    return responseFunc(res, 400, "Invalid userId");
+    return responseFunc(res, 400, true, "Invalid userId");
   }
   try {
     const id = userId || _id;
@@ -231,13 +248,13 @@ export const getUserBookings = async (req, res) => {
       .find({ userId: id })
       .populate({ path: "parkId", select: "name location " });
     if (!result.length) {
-      responseFunc(res, 200, "No booking yet", result);
+      responseFunc(res, 200, false, "No booking yet", result);
       return;
     }
-    responseFunc(res, 200, "user bookings", result);
+    responseFunc(res, 200, false, "user bookings", result);
   } catch (error) {
     console.log("getUserBookingsError: ", error);
-    responseFunc(res, 400, "Error in getting user bookings");
+    responseFunc(res, 400, true, "Error in getting user bookings");
   }
 };
 
@@ -261,21 +278,22 @@ export const getBookings = async (req, res) => {
         path: "userId",
         select: "firstname lastname email phonenumber",
       })
-      .populate({ path: "parkId", select: "name" });
-    responseFunc(res, 200, "Get bookings Successfully", result);
+      .populate({ path: "parkId", select: "name" })
+      .sort({ _id: -1 });
+    responseFunc(res, 200, false, "Get bookings Successfully", result);
   } catch (error) {
     console.log("getBookingsError: ", error);
-    responseFunc(res, 400, "Error in getting bookings");
+    responseFunc(res, 400, true, "Error in getting bookings");
   }
 };
 
 export const approveBooking = async (req, res) => {
   const { bookingId } = req.body;
   if (!bookingId) {
-    return responseFunc(res, 403, "Booking Id missing");
+    return responseFunc(res, 403, true, "Booking Id missing");
   }
   if (!mongoose.isValidObjectId(bookingId)) {
-    return responseFunc(res, 400, "Invalid Booking Id");
+    return responseFunc(res, 400, true, "Invalid Booking Id");
   }
   try {
     const booking = await bookedparks
@@ -284,7 +302,7 @@ export const approveBooking = async (req, res) => {
       .populate({ path: "parkId", select: "name" });
     console.log(booking);
     if (!booking) {
-      return responseFunc(res, 404, "No booking found");
+      return responseFunc(res, 404, true, "No booking found");
     }
     const { parkId, date, startTime, endTime } = booking;
     const isBooked = await bookedparks.findOne({
@@ -298,6 +316,7 @@ export const approveBooking = async (req, res) => {
       responseFunc(
         res,
         403,
+        true,
         "This park is already booked at this date and time"
       );
       return;
@@ -325,19 +344,19 @@ export const approveBooking = async (req, res) => {
     const text = `<h3>Dear ${booking.userId.firstname}</h3>,<p>I hope this email finds you well. I am pleased to inform you that your request for <b> ${booking.parkId.name}</b> booking on ${mailDate}(${mailStartTime}-${mailEndTime}) has been approved.</p>
      `;
     sendConfirmationEmail(email, subject, text);
-    responseFunc(res, 200, "Booking Approved");
+    responseFunc(res, 200, false, "Booking Approved");
   } catch (error) {
     console.log("ErrorInApproveBooking: ", error);
-    responseFunc(res, 400, "Error in approving booking");
+    responseFunc(res, 400, true, "Error in approving booking");
   }
 };
 export const rejectBooking = async (req, res) => {
   const { bookingId } = req.body;
   if (!bookingId) {
-    return responseFunc(res, 403, "Booking Id missing");
+    return responseFunc(res, 403, true, "Booking Id missing");
   }
   if (!mongoose.isValidObjectId(bookingId)) {
-    return responseFunc(res, 400, "Invalid Booking Id");
+    return responseFunc(res, 400, true, "Invalid Booking Id");
   }
   try {
     const booking = await bookedparks
@@ -346,7 +365,7 @@ export const rejectBooking = async (req, res) => {
       .populate({ path: "parkId", select: "name" });
     console.log(booking);
     if (!booking) {
-      return responseFunc(res, 404, "No booking found");
+      return responseFunc(res, 404, true, "No booking found");
     }
     const { date, startTime, endTime } = booking;
     const updateBookingStatus = await bookedparks.updateOne(
@@ -373,10 +392,10 @@ export const rejectBooking = async (req, res) => {
     <p>We understand that this may cause inconvenience, and we sincerely apologize for any disruption to your plans. Please rest assured that we have explored all available options before reaching this decision.</p>
       `;
     sendConfirmationEmail(email, subject, text);
-    responseFunc(res, 200, "Booking Rejected");
+    responseFunc(res, 200, false, "Booking Rejected");
   } catch (error) {
     console.log("ErrorInRejectBooking: ", error);
-    responseFunc(res, 400, "Error in rejecting booking");
+    responseFunc(res, 400, true, "Error in rejecting booking");
   }
 };
 
