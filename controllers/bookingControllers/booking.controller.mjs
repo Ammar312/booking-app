@@ -51,8 +51,8 @@ export const availableParksInTimeAndDate = async (req, res) => {
   }
   try {
     const availableParksInTime = await parks.find({
-      "parktiming.starttime": { $lte: new Date(starttime) },
-      "parktiming.endtime": { $gte: new Date(endtime) },
+      "parktiming.starttime": { $lte: new Date(endtime) },
+      "parktiming.endtime": { $gte: new Date(starttime) },
       isDisable: false,
     });
     // console.log("availableParksInTime", availableParksInTime);
@@ -71,10 +71,11 @@ export const availableParksInTimeAndDate = async (req, res) => {
       });
       responseFunc(res, 200, false, "Available parks", availableParks);
     } else {
+      console.log("None of the parks are open in this time range");
       responseFunc(
         res,
-        200,
-        false,
+        403,
+        true,
         "None of the parks are open in this time range"
       );
     }
@@ -192,6 +193,15 @@ export const bookAParkController = async (req, res) => {
 export const cancelBooking = async (req, res) => {
   const { bookingId } = req.body;
   try {
+    const approvalStatus = await approvals.updateOne(
+      {
+        booking: bookingId,
+        $or: [{ status: "approved" }, { status: "pending" }],
+      },
+      {
+        $set: { status: "canceled" },
+      }
+    );
     const changeStatus = await bookedparks.updateOne(
       { _id: bookingId, $or: [{ status: "booked" }, { status: "pending" }] },
       {
@@ -296,6 +306,7 @@ export const approveBooking = async (req, res) => {
     return responseFunc(res, 400, true, "Invalid Booking Id");
   }
   try {
+    console.log("bookingId", bookingId);
     const booking = await bookedparks
       .findOne({ _id: bookingId, status: "pending" })
       .populate({ path: "userId", select: "firstname lastname email" })
