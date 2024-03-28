@@ -32,6 +32,8 @@ export const addParkController = async (req, res) => {
     if (!req.files) {
       return responseFunc(res, 403, true, "Images Required!");
     }
+    console.log("parkStartTime: ", starttime);
+    console.log("parkEndTime: ", endtime);
     const files = req.files;
     console.log("parkfiles ", files);
     const urls = [];
