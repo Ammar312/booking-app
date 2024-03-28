@@ -23,6 +23,27 @@ export const signupController = async (req, res) => {
       true,
       "Password must be equal and greater than 6"
     );
+  // Phone number validation
+  const phoneRegex = /^0[0-9]{10}$/;
+  if (!phoneRegex.test(phonenumber)) {
+    if (!/^\d+$/.test(phonenumber)) {
+      return responseFunc(
+        res,
+        403,
+        true,
+        "Phone Number must contain only digits"
+      );
+    } else if (phonenumber.length !== 11) {
+      return responseFunc(
+        res,
+        403,
+        true,
+        "Phone Number must be exactly 11 digits"
+      );
+    } else if (phonenumber.charAt(0) !== "0") {
+      return responseFunc(res, 403, true, "Phone Number must start with '0'");
+    }
+  }
   try {
     const result = await users.findOne({ email });
     if (result) {
