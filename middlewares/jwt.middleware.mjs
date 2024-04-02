@@ -8,7 +8,14 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return responseFunc(res, 401, true, "Unauthorized: No token provided");
+    return responseFunc(
+      res,
+      401,
+      true,
+      "Unauthorized: No token provided",
+      "",
+      true
+    );
   }
 
   try {
@@ -24,7 +31,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
         next();
         return;
       } else {
-        responseFunc(res, 401, true, "Invalid User");
+        responseFunc(res, 401, true, "Invalid User", "", true);
       }
       return;
     }
@@ -39,7 +46,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
         req.currentUser = decoded;
         next();
       } else {
-        responseFunc(res, 401, true, "Invalid User");
+        responseFunc(res, 401, true, "Invalid User", "", true);
       }
     } else {
       responseFunc(
@@ -53,7 +60,7 @@ const verifyToken = (allowedRoles) => async (req, res, next) => {
     console.log("token verified");
   } catch (error) {
     console.log("expiryError ", error);
-    responseFunc(res, 401, true, "Unauthorized: Invalid token");
+    responseFunc(res, 401, true, "Session Expired", "", true);
     return;
   }
 };

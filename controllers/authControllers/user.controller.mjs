@@ -69,7 +69,7 @@ export const signupController = async (req, res) => {
         },
         process.env.SECRET,
         {
-          expiresIn: "1h",
+          expiresIn: "24h",
         }
       );
       res.cookie("token", token, { httpOnly: true, secure: true });

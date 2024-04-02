@@ -121,6 +121,10 @@ export const deletePark = async (req, res) => {
     return responseFunc(res, 400, true, "Invalid ParkId");
   }
   try {
+    const isPark = await parks.findOne({ _id: parkId, isDisable: false });
+    if (!isPark) {
+      return responseFunc(res, 404, true, "Park Not found");
+    }
     const result = await parks.updateOne(
       { _id: parkId, isDisable: false },
       { $set: { isDisable: true } }
