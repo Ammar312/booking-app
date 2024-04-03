@@ -233,7 +233,9 @@ export const bookAParkController = async (req, res) => {
         res,
         403,
         true,
-        "Advance payment should be 50% of the park cost"
+        `Advance payment should be 50% of the park cost (${
+          Number(isPark.cost) / 2
+        }) `
       );
     }
     if (advancePayment > isPark.cost) {
