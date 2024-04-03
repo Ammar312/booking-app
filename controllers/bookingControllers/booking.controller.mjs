@@ -19,51 +19,138 @@ const currentDate = `${year}-${formattedMonth}-${formattedDate}T00:00:00`;
 const st = `1970-01-01T00:00:00.000+00:00`;
 const et = `1970-01-01T23:59:00.000+00:00`;
 
+// export const availableParksInTimeAndDate = async (req, res) => {
+//   const { date, starttime, endtime } = req.body;
+//   if (!date || !starttime || !endtime) {
+//     return responseFunc(res, 403, true, "Required parameter missing");
+//   }
+
+//   // const a = moment.utc(new Date(starttime)).local().format();
+//   // const b = moment.utc(new Date(endtime)).local().format();
+//   // console.log("as", a);
+//   // console.log("be", b);
+//   console.log("starttime: ", starttime);
+//   console.log("endtime: ", endtime);
+//   // console.log(currentDate);
+//   const utchour = dayjs(endtime).utc().hour();
+//   const utcminute = dayjs(endtime).utc().minute();
+//   const utcdate = dayjs.utc(`1970-01-01T${utchour}:${utcminute}:00`).isUTC();
+//   // .format("YYYY-MM-DDTHH:mm:00");
+//   const sw = dayjs(endtime).format();
+//   // console.log(utchour);
+//   // console.log(utcminute);
+//   const utctime = convertToUTCAndFormat(endtime);
+//   console.log(utctime);
+//   console.log(new Date(utctime));
+//   console.log(endtime);
+//   if (date < currentDate) {
+//     return responseFunc(res, 400, true, "Invalid Date");
+//   }
+//   if (!(starttime > st && endtime < et)) {
+//     return responseFunc(res, 400, true, "Invalid Time");
+//   }
+//   try {
+//     const availableParksInTime = await parks.find({
+//       "parktiming.starttime": { $lte: new Date(endtime) },
+//       "parktiming.endtime": { $gte: new Date(starttime) },
+//       isDisable: false,
+//     });
+//     // console.log("availableParksInTime", availableParksInTime);
+//     if (availableParksInTime.length > 0) {
+//       const bookedParks = await bookedparks.find({
+//         date: date,
+//         startTime: { $lte: endtime },
+//         endTime: { $gte: starttime },
+//         $or: [{ status: "pending" }, { status: "booked" }],
+//       });
+//       console.log("bookedParks", bookedParks);
+//       const availableParks = availableParksInTime.filter((park) => {
+//         return !bookedParks.some(
+//           (bookedPark) => bookedPark.parkId.toString() === park._id.toString()
+//         );
+//       });
+//       responseFunc(res, 200, false, "Available parks", availableParks);
+//     } else {
+//       console.log("None of the parks are open in this time range");
+//       responseFunc(
+//         res,
+//         403,
+//         true,
+//         "None of the parks are open in this time range"
+//       );
+//     }
+
+//     // responseFunc(res, 200, "get", availableParksInTime);
+//   } catch (error) {
+//     console.log("parkbookingerror", error);
+//     responseFunc(res, 400, true, "Error in finding available parks");
+//   }
+// };
+
 export const availableParksInTimeAndDate = async (req, res) => {
   const { date, starttime, endtime } = req.body;
-  if (!date || !starttime || !endtime) {
-    return responseFunc(res, 403, true, "Required parameter missing");
+
+  // Check if date is provided
+  if (!date) {
+    return responseFunc(res, 403, true, "Date is required");
   }
 
-  // const a = moment.utc(new Date(starttime)).local().format();
-  // const b = moment.utc(new Date(endtime)).local().format();
-  // console.log("as", a);
-  // console.log("be", b);
-  console.log("starttime: ", starttime);
-  console.log("endtime: ", endtime);
-  // console.log(currentDate);
-  const utchour = dayjs(endtime).utc().hour();
-  const utcminute = dayjs(endtime).utc().minute();
-  const utcdate = dayjs.utc(`1970-01-01T${utchour}:${utcminute}:00`).isUTC();
-  // .format("YYYY-MM-DDTHH:mm:00");
-  const sw = dayjs(endtime).format();
-  // console.log(utchour);
-  // console.log(utcminute);
-  const utctime = convertToUTCAndFormat(endtime);
-  console.log(utctime);
-  console.log(new Date(utctime));
-  console.log(endtime);
+  // Check if either both starttime and endtime are provided or none of them are provided
+  if ((starttime && !endtime) || (!starttime && endtime)) {
+    return responseFunc(
+      res,
+      403,
+      true,
+      "Both start time and end time should be provided or none"
+    );
+  }
+
+  // Check if starttime and endtime are provided, and if they are, ensure endtime is greater than starttime
+  if (starttime && endtime && starttime >= endtime) {
+    return responseFunc(
+      res,
+      403,
+      true,
+      "End time should be greater than start time"
+    );
+  }
+
+  // Optional check for date validation
   if (date < currentDate) {
     return responseFunc(res, 400, true, "Invalid Date");
   }
-  if (!(starttime > st && endtime < et)) {
-    return responseFunc(res, 400, true, "Invalid Time");
-  }
+
   try {
-    const availableParksInTime = await parks.find({
-      "parktiming.starttime": { $lte: new Date(endtime) },
-      "parktiming.endtime": { $gte: new Date(starttime) },
+    let query = {
       isDisable: false,
-    });
-    // console.log("availableParksInTime", availableParksInTime);
+    };
+
+    // If both starttime and endtime are provided, include time-based filtering
+    if (starttime && endtime) {
+      query["parktiming.starttime"] = { $lte: new Date(endtime) };
+      query["parktiming.endtime"] = { $gte: new Date(starttime) };
+    }
+
+    const availableParksInTime = await parks.find(query);
+
     if (availableParksInTime.length > 0) {
-      const bookedParks = await bookedparks.find({
-        date: date,
-        startTime: { $lte: endtime },
-        endTime: { $gte: starttime },
-        $or: [{ status: "pending" }, { status: "booked" }],
-      });
-      console.log("bookedParks", bookedParks);
+      // If both starttime and endtime are provided, filter booked parks by time range
+      let bookedParks = [];
+      if (starttime && endtime) {
+        bookedParks = await bookedparks.find({
+          date: date,
+          startTime: { $lte: endtime },
+          endTime: { $gte: starttime },
+          $or: [{ status: "pending" }, { status: "booked" }],
+        });
+      } else {
+        // If time parameters are not provided, just filter booked parks by date
+        bookedParks = await bookedparks.find({
+          date: date,
+          $or: [{ status: "pending" }, { status: "booked" }],
+        });
+      }
+
       const availableParks = availableParksInTime.filter((park) => {
         return !bookedParks.some(
           (bookedPark) => bookedPark.parkId.toString() === park._id.toString()
@@ -71,21 +158,15 @@ export const availableParksInTimeAndDate = async (req, res) => {
       });
       responseFunc(res, 200, false, "Available parks", availableParks);
     } else {
-      console.log("None of the parks are open in this time range");
-      responseFunc(
-        res,
-        403,
-        true,
-        "None of the parks are open in this time range"
-      );
+      console.log("None of the parks are open");
+      responseFunc(res, 403, true, "None of the parks are open");
     }
-
-    // responseFunc(res, 200, "get", availableParksInTime);
   } catch (error) {
     console.log("parkbookingerror", error);
     responseFunc(res, 400, true, "Error in finding available parks");
   }
 };
+
 export const bookAParkController = async (req, res) => {
   const {
     userId,
@@ -127,7 +208,7 @@ export const bookAParkController = async (req, res) => {
       _id: parkId,
       "parktiming.starttime": { $lte: endTime },
       "parktiming.endtime": { $gte: startTime },
-      isDisable: "false",
+      isDisable: false,
     });
     if (!isPark) {
       return responseFunc(
@@ -156,12 +237,7 @@ export const bookAParkController = async (req, res) => {
       $or: [{ status: "pending" }, { status: "booked" }],
     });
     if (isBooked) {
-      responseFunc(
-        res,
-        403,
-        true,
-        "This park is already booked at this date and time"
-      );
+      responseFunc(res, 403, true, "This park is already booked at this time");
       return;
     }
     const bookPark = await bookedparks.create({
@@ -182,11 +258,11 @@ export const bookAParkController = async (req, res) => {
       res,
       200,
       false,
-      "You will recieve a email of your booking soon."
+      "You will receive an email confirmation of your booking soon."
     );
   } catch (error) {
     console.log("parkbookingerror", error);
-    responseFunc(res, 400, true, "error");
+    responseFunc(res, 400, true, "Error occurred while booking");
   }
 };
 
