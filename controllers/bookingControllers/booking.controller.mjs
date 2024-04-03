@@ -89,7 +89,9 @@ const et = `1970-01-01T23:59:00.000+00:00`;
 
 export const availableParksInTimeAndDate = async (req, res) => {
   const { date, starttime, endtime } = req.body;
-
+  console.log("date: ", date);
+  console.log("starttime: ", starttime);
+  console.log("endtime: ", endtime);
   // Check if date is provided
   if (!date) {
     return responseFunc(res, 403, true, "Date is required");
@@ -224,6 +226,14 @@ export const bookAParkController = async (req, res) => {
         403,
         true,
         `This park has the capacity of ${isPark.capacity} peoples `
+      );
+    }
+    if (Number(advancePayment) < Number(isPark.cost) / 2) {
+      return responseFunc(
+        res,
+        403,
+        true,
+        "Advance payment should be 50% of the park cost"
       );
     }
     if (advancePayment > isPark.cost) {
